@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Http\Requests\Api\V1\Affiliate;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class StoreAffiliateWithdrawalRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return $this->user() !== null;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function rules(): array
+    {
+        return [
+            'amount' => ['required', 'numeric', 'min:1'],
+            'notes' => ['nullable', 'string'],
+        ];
+    }
+}

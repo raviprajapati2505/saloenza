@@ -1,0 +1,367 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+@source '../**/*.jsx';
+@source '../**/*.ts';
+@source '../**/*.tsx';
+
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Glowsuite brand palette: #000000 / #E0229A / #9125CA */
+    --color-brand-50: #fdf2f8;
+    --color-brand-100: #fce7f3;
+    --color-brand-200: #fbcfe8;
+    --color-brand-300: #f9a8d4;
+    --color-brand-400: #f472b6;
+    --color-brand-500: #E0229A;
+    --color-brand-600: #c41d87;
+    --color-brand-700: #9125CA;
+    --color-brand-800: #6b1a96;
+    --color-brand-900: #4a1268;
+    --color-brand-950: #000000;
+}
+@layer base {
+    html,
+    body,
+    #app {
+        min-height: 100%;
+        min-height: 100dvh;
+    }
+
+    body {
+        overscroll-behavior-y: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active,
+    textarea:-webkit-autofill,
+    textarea:-webkit-autofill:hover,
+    textarea:-webkit-autofill:focus,
+    select:-webkit-autofill,
+    select:-webkit-autofill:hover,
+    select:-webkit-autofill:focus {
+        -webkit-text-fill-color: #0f172a !important;
+        caret-color: #0f172a;
+        -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+        box-shadow: 0 0 0 1000px #ffffff inset !important;
+        border-radius: 0.75rem;
+        transition: background-color 9999s ease-out 0s;
+    }
+}
+
+@layer utilities {
+    .pb-safe {
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    .pt-safe {
+        padding-top: env(safe-area-inset-top, 0px);
+    }
+
+    .scroll-touch {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+    }
+}
+
+
+@layer components {
+    .app-shell {
+        @apply min-h-screen bg-black text-white;
+    }
+
+    .shell-nav {
+        @apply border-b border-white/15 bg-black/90 backdrop-blur;
+    }
+
+    .shell-wrap {
+        @apply mx-auto flex max-w-7xl items-center justify-between px-5 py-4;
+    }
+
+    .brand-title {
+        @apply text-base font-semibold tracking-[0.2em] uppercase;
+    }
+
+    .nav-link {
+        @apply rounded-full border border-white/20 px-4 py-2 text-xs font-medium tracking-wide text-white/80 transition;
+    }
+
+    .nav-link:hover {
+        @apply border-white bg-white text-black;
+    }
+
+    .nav-link.router-link-active {
+        @apply border-white bg-white text-black;
+    }
+
+    .page-wrap {
+        @apply mx-auto max-w-7xl px-5 py-8;
+    }
+
+    /* Applies to current route placeholder sections. */
+    .page-wrap section {
+        @apply rounded-3xl border border-white/15 bg-white/3 p-8 shadow-2xl shadow-black/30 backdrop-blur;
+    }
+
+    .page-wrap h2 {
+        @apply text-2xl font-semibold tracking-tight;
+    }
+
+    .page-wrap p {
+        @apply mt-3 text-sm leading-6 text-white/70;
+    }
+
+    .checkmark-wrap {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .checkmark-circle {
+        fill: #ecfdf5;
+        stroke: #10b981;
+        stroke-width: 2.5;
+        stroke-dasharray: 220;
+        stroke-dashoffset: 220;
+        animation: draw-circle 0.9s ease forwards;
+    }
+
+    .checkmark-path {
+        fill: none;
+        stroke: #059669;
+        stroke-width: 5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 80;
+        stroke-dashoffset: 80;
+        animation: draw-path 0.5s 0.7s ease forwards;
+    }
+
+    /* PWA & Mobile App Safe Area Utilities */
+    .pb-safe {
+        padding-bottom: env(safe-area-inset-bottom, 1rem);
+    }
+    .pt-safe {
+        padding-top: env(safe-area-inset-top, 1rem);
+    }
+    .tap-highlight-transparent {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Appointments calendar — FullCalendar v6 layout helpers */
+    .appointments-calendar {
+        @apply h-full w-full;
+        min-height: 36rem;
+    }
+
+    .appointments-calendar .fc {
+        @apply h-full w-full;
+        font-family: var(--font-sans);
+    }
+
+    .appointments-calendar .fc-view-harness {
+        @apply h-full min-h-[32rem];
+    }
+
+    .appointments-calendar .fc-scroller {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+    }
+
+    .appointments-calendar .fc-theme-standard td,
+    .appointments-calendar .fc-theme-standard th {
+        border-color: #cbd5e1 !important;
+    }
+
+    .appointments-calendar .fc-col-header-cell {
+        padding: 0.85rem 0 !important;
+        background-color: #f1f5f9 !important;
+        border-bottom: 2px solid #cbd5e1 !important;
+    }
+
+    .appointments-calendar .fc-col-header-cell-cushion {
+        font-size: 0.875rem !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        text-decoration: none !important;
+        padding: 0 0.4rem !important;
+    }
+
+    .appointments-calendar .fc-timegrid-slot {
+        height: 3rem !important;
+    }
+
+    @media (min-width: 1024px) {
+        .appointments-calendar .fc-timegrid-slot {
+            height: 3.25rem !important;
+        }
+    }
+
+    .appointments-calendar .fc-timegrid-slot-minor {
+        border-top-style: dashed !important;
+        border-top-color: #e2e8f0 !important;
+    }
+
+    .appointments-calendar .fc-timegrid-slot-label-cushion,
+    .appointments-calendar .fc-timegrid-axis-cushion {
+        font-size: 0.7rem !important;
+        font-weight: 700 !important;
+        color: #475569 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.04em !important;
+    }
+
+    .appointments-calendar .fc-timegrid-axis {
+        width: 3.25rem !important;
+    }
+
+    @media (min-width: 640px) {
+        .appointments-calendar .fc-timegrid-axis {
+            width: 4rem !important;
+        }
+    }
+
+    .appointments-calendar .fc-event {
+        border: none !important;
+        background: transparent !important;
+        margin: 1px 2px !important;
+    }
+
+    .appointments-calendar .fc-timegrid-event-harness-inset .fc-timegrid-event,
+    .appointments-calendar .fc-timegrid-event.fc-event-mirror,
+    .appointments-calendar .fc-timegrid-more-link {
+        box-shadow: none !important;
+    }
+
+    .appointments-calendar .fc-timegrid-divider {
+        display: none;
+    }
+
+    .appointments-calendar .fc-license-message {
+        display: none !important;
+    }
+
+    .appointments-calendar .fc-now-indicator-line {
+        border-color: #E0229A !important;
+        border-width: 2px !important;
+        z-index: 4 !important;
+    }
+
+    .appointments-calendar .fc-now-indicator-arrow {
+        border-color: #E0229A !important;
+    }
+
+    .appointments-calendar .fc-daygrid-day-frame {
+        min-height: 6.5rem;
+    }
+
+    @media (min-width: 768px) {
+        .appointments-calendar .fc-daygrid-day-frame {
+            min-height: 7.5rem;
+        }
+    }
+
+    .appointments-calendar .fc-daygrid-day-number {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: #1e293b;
+        padding: 0.4rem 0.55rem;
+    }
+
+    .appointments-calendar .fc-day-today {
+        background-color: rgba(224, 34, 154, 0.06) !important;
+    }
+
+    .appointments-calendar--month {
+        @apply min-h-[36rem] w-full;
+        height: auto !important;
+    }
+
+    .appointments-calendar--month .fc {
+        height: auto !important;
+    }
+
+    .appointments-calendar--month .fc-view-harness {
+        height: auto !important;
+        min-height: 32rem;
+    }
+
+    .appointments-calendar--month .fc-daygrid-day-frame {
+        min-height: 8rem;
+    }
+
+    @media (min-width: 768px) {
+        .appointments-calendar--month .fc-daygrid-day-frame {
+            min-height: 9.5rem;
+        }
+    }
+
+    .appointments-calendar--month .fc-daygrid-event {
+        margin-top: 2px;
+        margin-bottom: 2px;
+    }
+
+    .appointments-calendar--month .fc-daygrid-day-events {
+        margin-bottom: 0.35rem;
+        padding: 0 0.2rem;
+    }
+
+    .appointments-calendar .fc-more-link {
+        font-size: 0.75rem !important;
+        font-weight: 700 !important;
+        color: #be185d !important;
+        padding: 0.15rem 0.35rem !important;
+    }
+}
+
+@keyframes draw-circle {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes draw-path {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+/* Custom scrollbars — visible enough to discover overflow without being heavy */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+::-webkit-scrollbar-track {
+    background: rgba(241, 245, 249, 0.9);
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.75);
+    border-radius: 9999px;
+    border: 2px solid rgba(241, 245, 249, 0.9);
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.9);
+}
+
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.75) rgba(241, 245, 249, 0.9);
+}
+
+@font-face {
+    font-family: 'PROPONO BC';
+    src: url('/fonts/PROPONO-BC.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+}
+
