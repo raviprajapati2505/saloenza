@@ -36,7 +36,7 @@ function MiniStat({ label, value, loading, labelClass }) {
 }
 
 /**
- * Premium Glowsuite brand hero for all dashboards.
+ * Premium Saloenza brand hero for all dashboards.
  * `tone` is accepted for back-compat but always renders the brand palette.
  */
 export default function HeroBanner({
@@ -58,7 +58,7 @@ export default function HeroBanner({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
-      className={`relative overflow-hidden rounded-[20px] bg-gradient-to-br ${t.shell} p-6 text-white shadow-[0_20px_50px_rgba(224,34,154,0.18)] sm:p-8`}
+      className={`relative overflow-hidden rounded-[20px] bg-gradient-to-br ${t.shell} p-6 text-white shadow-[0_20px_50px_rgba(204,15,103,0.18)] sm:p-8`}
     >
       <div className={`pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full ${t.blobA} blur-3xl`} />
       <div className={`pointer-events-none absolute -bottom-24 left-1/3 h-56 w-56 rounded-full ${t.blobB} blur-3xl`} />
@@ -68,7 +68,7 @@ export default function HeroBanner({
         className="pointer-events-none absolute inset-0 opacity-90"
         style={{
           background:
-            'radial-gradient(ellipse 70% 60% at 15% 20%, rgba(224,34,154,0.35), transparent 55%), radial-gradient(ellipse 60% 50% at 90% 85%, rgba(145,37,202,0.4), transparent 50%)',
+            'radial-gradient(ellipse 70% 60% at 15% 20%, rgba(204,15,103,0.35), transparent 55%), radial-gradient(ellipse 60% 50% at 90% 85%, rgba(143,10,72,0.4), transparent 50%)',
         }}
       />
 

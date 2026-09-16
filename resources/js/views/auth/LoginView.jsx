@@ -13,7 +13,7 @@ export default function LoginView() {
   const [searchParams] = useSearchParams()
   const auth = useAuthStore()
   const platformBranding = getPlatformBranding()
-  const portalName = platformBranding?.portal_name || 'Glowsuite'
+  const portalName = platformBranding?.portal_name || 'Saloenza'
 
   const [submitting, setSubmitting] = useState(false)
   const [authError, setAuthError] = useState('')
@@ -126,7 +126,7 @@ export default function LoginView() {
             className="pointer-events-none absolute inset-0"
             style={{
               background:
-                'radial-gradient(ellipse 80% 60% at 20% 30%, rgba(224,34,154,0.28), transparent 55%), radial-gradient(ellipse 70% 50% at 80% 80%, rgba(145,37,202,0.22), transparent 50%)',
+                'radial-gradient(ellipse 80% 60% at 20% 30%, rgba(204,15,103,0.28), transparent 55%), radial-gradient(ellipse 70% 50% at 80% 80%, rgba(143,10,72,0.22), transparent 50%)',
             }}
           />
           <div
@@ -166,7 +166,7 @@ export default function LoginView() {
             className="pointer-events-none absolute inset-0 lg:hidden"
             style={{
               background:
-                'radial-gradient(ellipse 90% 50% at 50% 0%, rgba(224,34,154,0.18), transparent 55%)',
+                'radial-gradient(ellipse 90% 50% at 50% 0%, rgba(204,15,103,0.18), transparent 55%)',
             }}
           />
 

@@ -20,7 +20,7 @@ return [
                     'label' => 'Portal Display Name',
                     'description' => 'Shown in the header, emails, and customer-facing pages.',
                     'type' => 'string',
-                    'default' => env('APP_NAME', 'Glowsuite'),
+                    'default' => env('APP_NAME', 'Saloenza'),
                 ],
                 'logo_path' => [
                     'label' => 'Logo',
@@ -32,13 +32,13 @@ return [
                     'label' => 'Primary Brand Color',
                     'description' => 'Used for buttons, accents, and highlights.',
                     'type' => 'color',
-                    'default' => '#E0229A',
+                    'default' => '#cc0f67',
                 ],
                 'secondary_color' => [
                     'label' => 'Secondary Brand Color',
                     'description' => 'Used for gradients and secondary accents.',
                     'type' => 'color',
-                    'default' => '#9125CA',
+                    'default' => '#8f0a48',
                 ],
                 'support_email' => [
                     'label' => 'Support Email',
@@ -69,7 +69,7 @@ return [
                     'label' => 'From Name',
                     'description' => 'Sender name recipients see in their inbox.',
                     'type' => 'string',
-                    'default' => env('MAIL_FROM_NAME', env('APP_NAME', 'Glowsuite')),
+                    'default' => env('MAIL_FROM_NAME', env('APP_NAME', 'Saloenza')),
                 ],
                 'from_email' => [
                     'label' => 'From Email',
@@ -145,7 +145,7 @@ return [
                     'label' => 'Sender ID / From Number',
                     'description' => 'Alphanumeric sender ID (MSG91/AWS) or Twilio phone number.',
                     'type' => 'string',
-                    'default' => env('OTP_AWS_SMS_SENDER_ID', 'GLOWSUITE'),
+                    'default' => env('OTP_AWS_SMS_SENDER_ID', 'SALOENZA'),
                 ],
                 'account_sid' => [
                     'label' => 'Twilio Account SID',

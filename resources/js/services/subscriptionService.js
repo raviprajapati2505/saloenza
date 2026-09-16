@@ -156,14 +156,14 @@ export async function openRazorpayCheckout(checkout, authUser, onSuccess, onErro
     key: checkout.razorpay_key_id,
     amount: Math.round(Number(checkout.amount || 0) * 100),
     currency: checkout.currency || 'INR',
-    name: checkout.company_name || checkout.portal_name || 'Glowsuite',
+    name: checkout.company_name || checkout.portal_name || 'Saloenza',
     description: checkout.description || 'Subscription plan upgrade',
     order_id: checkout.razorpay_order_id,
     prefill: {
       name: authUser?.name || '',
       email: authUser?.email || '',
     },
-    theme: { color: checkout.primary_color || '#9125CA' },
+    theme: { color: checkout.primary_color || '#cc0f67' },
     handler: (response) => onSuccess?.(response),
     modal: {
       ondismiss: () => onError?.(new Error('Payment cancelled.')),

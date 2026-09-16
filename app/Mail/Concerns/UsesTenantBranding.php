@@ -25,7 +25,7 @@ trait UsesTenantBranding
         return [
             'portalName' => (string) ($this->branding['portal_name'] ?? config('app.name')),
             'logoUrl' => $this->branding['logo_url'] ?? null,
-            'primaryColor' => (string) ($this->branding['primary_color'] ?? '#E0229A'),
+            'primaryColor' => (string) ($this->branding['primary_color'] ?? '#cc0f67'),
             'supportEmail' => (string) ($this->branding['support_email'] ?? ''),
             'supportPhone' => (string) ($this->branding['support_phone'] ?? ''),
         ];

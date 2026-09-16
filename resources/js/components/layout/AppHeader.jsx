@@ -25,7 +25,7 @@ export default function AppHeader({ onToggleSidebar, onToggleMobile }) {
   const [scrolled, setScrolled] = useState(false)
 
   const breadcrumb = useMemo(() => {
-    const platformName = getPlatformBranding()?.portal_name || 'Glowsuite'
+    const platformName = getPlatformBranding()?.portal_name || 'Saloenza'
     const map = {
       dashboard: 'Overview',
       appointments: 'Schedule',
@@ -132,7 +132,7 @@ export default function AppHeader({ onToggleSidebar, onToggleMobile }) {
               <BrandLogo variant="mark" size="sm" className="rounded-lg shrink-0" />
               <div className="flex flex-col min-w-0">
                 <span className="text-xs font-bold text-brand-400 tracking-wide leading-tight truncate">
-                  {auth.tenant?.name || getPlatformBranding()?.portal_name || 'Glowsuite'}
+                  {auth.tenant?.name || getPlatformBranding()?.portal_name || 'Saloenza'}
                 </span>
                 <span className="text-[11px] font-semibold text-slate-300 leading-tight truncate">
                   {breadcrumb}
@@ -150,7 +150,7 @@ export default function AppHeader({ onToggleSidebar, onToggleMobile }) {
           <div className="flex-1 max-w-xl mx-auto flex justify-center hidden md:flex">
             <button 
               type="button" 
-              className="group flex w-full max-w-md items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-4 py-2 text-sm text-slate-500 shadow-sm transition-all hover:bg-white hover:border-brand-500/30 hover:shadow-[0_0_15px_rgba(145,37,202,0.1)] focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+              className="group flex w-full max-w-md items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-4 py-2 text-sm text-slate-500 shadow-sm transition-all hover:bg-white hover:border-brand-500/30 hover:shadow-[0_0_15px_rgba(143,10,72,0.1)] focus:outline-none focus:ring-2 focus:ring-brand-500/20"
               onClick={() => setSearchOpen(true)}
             >
               <Search className="h-4 w-4 text-slate-400 group-hover:text-brand-500 transition-colors" />

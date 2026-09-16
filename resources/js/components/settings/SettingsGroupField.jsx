@@ -58,7 +58,7 @@ function ColorField({ setting, value, onChange, error, disabled }) {
       <div className="flex items-center gap-3">
         <input
           type="color"
-          value={value || '#E0229A'}
+          value={value || '#cc0f67'}
           disabled={disabled}
           onChange={(event) => onChange(event.target.value)}
           className="h-11 w-14 cursor-pointer rounded-lg border border-slate-200 bg-white p-1 disabled:cursor-not-allowed"
@@ -68,7 +68,7 @@ function ColorField({ setting, value, onChange, error, disabled }) {
           onUpdateModelValue={onChange}
           error={error}
           disabled={disabled}
-          placeholder="#E0229A"
+          placeholder="#cc0f67"
         />
       </div>
       {setting.description ? (

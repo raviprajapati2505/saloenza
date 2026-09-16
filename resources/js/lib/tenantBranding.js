@@ -30,8 +30,8 @@ function mixHex(baseHex, targetHex, amount) {
 
 export function applyTenantBrandingTheme(branding) {
   const root = document.documentElement
-  const primary = branding?.primary_color || '#E0229A'
-  const secondary = branding?.secondary_color || '#9125CA'
+  const primary = branding?.primary_color || '#cc0f67'
+  const secondary = branding?.secondary_color || '#8f0a48'
 
   const vars = {
     '--color-brand-50': mixHex(primary, '#ffffff', 0.92),

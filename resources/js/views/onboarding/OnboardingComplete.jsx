@@ -8,7 +8,7 @@ import { getPlatformBranding } from '../../stores/platformBranding.js'
 export default function OnboardingComplete() {
   const router = useNavigate()
   const auth = useAuthStore()
-  const portalName = getPlatformBranding()?.portal_name || 'Glowsuite'
+  const portalName = getPlatformBranding()?.portal_name || 'Saloenza'
   const pending = Boolean(auth.tenant?.activation_pending)
   const requestedPlan = auth.tenant?.requested_plan?.name
 

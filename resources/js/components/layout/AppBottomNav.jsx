@@ -43,7 +43,7 @@ export default function AppBottomNav() {
                 {active && (
                   <motion.div
                     layoutId="bottomNavIndicator"
-                    className="absolute inset-0 bg-brand-500/20 rounded-full border border-brand-500/30 shadow-[0_0_12px_rgba(224,34,154,0.3)]"
+                    className="absolute inset-0 bg-brand-500/20 rounded-full border border-brand-500/30 shadow-[0_0_12px_rgba(204,15,103,0.3)]"
                     transition={{ type: "spring", stiffness: 350, damping: 25 }}
                   />
                 )}

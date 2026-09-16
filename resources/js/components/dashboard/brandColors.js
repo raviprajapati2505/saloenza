@@ -1,7 +1,7 @@
 /**
- * Glowsuite dashboard accent map.
+ * Saloenza dashboard accent map.
  * Keys kept for back-compat with existing `color: 'indigo' | 'amber' | …` props.
- * Decorative accents resolve to pink/purple brand shades; rose/slate stay semantic.
+ * Decorative accents resolve to brand shades; rose/slate stay semantic.
  */
 export const KPI_ICON_COLORS = {
   teal: 'text-brand-600 bg-gradient-to-br from-brand-50 to-brand-100/80',
@@ -41,12 +41,12 @@ export const QUICK_ACTION_COLORS = {
 
 /** Chart.js brand series */
 export const CHART_BRAND = {
-  primary: 'rgb(224, 34, 154)',
-  primarySoft: 'rgba(224, 34, 154, 0.14)',
-  primaryStrong: 'rgba(224, 34, 154, 0.72)',
-  secondary: 'rgb(145, 37, 202)',
-  secondarySoft: 'rgba(145, 37, 202, 0.14)',
-  tertiary: 'rgb(244, 114, 182)',
+  primary: 'rgb(204, 15, 103)',
+  primarySoft: 'rgba(204, 15, 103, 0.14)',
+  primaryStrong: 'rgba(204, 15, 103, 0.72)',
+  secondary: 'rgb(143, 10, 72)',
+  secondarySoft: 'rgba(143, 10, 72, 0.14)',
+  tertiary: 'rgb(244, 114, 163)',
   muted: 'rgb(148, 163, 184)',
   danger: 'rgb(244, 63, 94)',
   black: '#000000',

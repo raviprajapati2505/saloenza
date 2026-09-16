@@ -43,7 +43,7 @@ export default function LoadingBar() {
             initial={{ width: '0%' }}
             animate={{ width: loading ? `${progress}%` : '100%' }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="h-full bg-gradient-to-r from-brand-500 via-emerald-400 to-brand-600 shadow-[0_0_10px_rgba(145,37,202,0.6)]"
+            className="h-full bg-gradient-to-r from-brand-500 via-emerald-400 to-brand-600 shadow-[0_0_10px_rgba(143,10,72,0.6)]"
           />
         </motion.div>
       )}

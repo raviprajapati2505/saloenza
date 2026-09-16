@@ -4,7 +4,7 @@ import { getPlatformBranding } from '../../stores/platformBranding.js'
 
 export default function AuthBootstrap() {
   const branding = getPlatformBranding()
-  const portalName = branding?.portal_name || 'Glowsuite'
+  const portalName = branding?.portal_name || 'Saloenza'
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-black">

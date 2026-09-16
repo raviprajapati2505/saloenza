@@ -10,7 +10,7 @@ const USE_MOCK_AUTH = import.meta.env.VITE_USE_MOCK_AUTH === 'true'
 export default function ForgotPasswordView() {
   const router = useNavigate()
   const platformBranding = getPlatformBranding()
-  const portalName = platformBranding?.portal_name || 'Glowsuite'
+  const portalName = platformBranding?.portal_name || 'Saloenza'
   const [step, setStep] = useState('request') // request, verify, reset
   const [login, setLogin] = useState('')
   const [loginError, setLoginError] = useState('')

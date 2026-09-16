@@ -44,7 +44,7 @@ const CHIP_STYLES = {
   neutral: 'border-slate-200/90 bg-white/90 text-slate-700 shadow-[0_1px_3px_rgba(15,23,42,0.06)]',
   success: 'border-emerald-200/90 bg-gradient-to-b from-emerald-50 to-white text-emerald-800 shadow-[0_1px_3px_rgba(16,185,129,0.08)]',
   muted: 'border-slate-200/80 bg-slate-50/90 text-slate-500 shadow-sm',
-  brand: 'border-brand-200/80 bg-gradient-to-b from-brand-50 to-white text-brand-800 shadow-[0_1px_3px_rgba(145,37,202,0.08)]',
+  brand: 'border-brand-200/80 bg-gradient-to-b from-brand-50 to-white text-brand-800 shadow-[0_1px_3px_rgba(143,10,72,0.08)]',
 }
 
 function GradientFrame({ palette, children, className = '' }) {

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'glowsuite-pwa-v5';
+const CACHE_NAME = 'saloenza-pwa-v5';
 const STATIC_ASSETS = [
   '/',
   '/icons/favicon-32x32.png',

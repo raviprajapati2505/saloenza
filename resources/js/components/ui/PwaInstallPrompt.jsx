@@ -6,7 +6,7 @@ import {
   subscribeToInstallAvailable,
 } from '../../pwa/deferredInstallPrompt.js'
 
-const DISMISS_KEY = 'glowsuite_pwa_install_dismissed_at'
+const DISMISS_KEY = 'saloenza_pwa_install_dismissed_at'
 const DISMISS_DAYS = 7
 const DISMISS_MS = DISMISS_DAYS * 24 * 60 * 60 * 1000
 const PWA_ICON_SRC = '/icons/icon-512x512.png'
@@ -86,8 +86,8 @@ export default function PwaInstallPrompt() {
   if (!visible) return null
 
   const branding = getPlatformBranding()
-  const portalName = branding?.portal_name || 'Glowsuite'
-  const primaryColor = branding?.primary_color || '#E0229A'
+  const portalName = branding?.portal_name || 'Saloenza'
+  const primaryColor = branding?.primary_color || '#cc0f67'
 
   const dismiss = () => {
     localStorage.setItem(DISMISS_KEY, String(Date.now()))

@@ -12,7 +12,7 @@ export default function PlanBadge({ plan = 'Free', className }) {
   const key = label.toLowerCase()
 
   const config = {
-    enterprise: 'border-brand-500/30 bg-brand-500/10 text-brand-400 shadow-[0_0_10px_rgba(145,37,202,0.15)]',
+    enterprise: 'border-brand-500/30 bg-brand-500/10 text-brand-400 shadow-[0_0_10px_rgba(143,10,72,0.15)]',
     pro: 'border-amber-500/30 bg-amber-500/10 text-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.15)]',
     free: 'border-slate-500/30 bg-slate-500/10 text-slate-300 shadow-[0_0_10px_rgba(100,116,139,0.15)]'
   }

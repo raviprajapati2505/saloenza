@@ -6,8 +6,8 @@ import { clearDeferredInstallPrompt, captureDeferredInstallPrompt } from '../../
 
 vi.mock('../../../stores/platformBranding.js', () => ({
   getPlatformBranding: () => ({
-    portal_name: 'Glowsuite',
-    primary_color: '#E0229A',
+    portal_name: 'Saloenza',
+    primary_color: '#cc0f67',
     logo_url: '/branding/wrong-logo.png',
   }),
 }))
@@ -36,7 +36,7 @@ describe('PwaInstallPrompt', () => {
       expect(screen.getByRole('button', { name: /install/i })).toBeInTheDocument()
     })
 
-    const icon = screen.getByAltText(/glowsuite app icon/i)
+    const icon = screen.getByAltText(/saloenza app icon/i)
     expect(icon).toHaveAttribute('src', '/icons/icon-512x512.png')
     expect(icon).toHaveClass('bg-black')
     expect(icon).not.toHaveAttribute('style')
@@ -77,6 +77,6 @@ describe('PwaInstallPrompt', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /not now/i }))
 
-    expect(screen.queryByText(/install glowsuite/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/install saloenza/i)).not.toBeInTheDocument()
   })
 })

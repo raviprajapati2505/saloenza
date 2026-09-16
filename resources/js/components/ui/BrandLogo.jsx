@@ -32,7 +32,7 @@ export default function BrandLogo({
   const auth = useAuthStore()
   const resolvedBranding = branding || auth.tenant?.branding || getPlatformBranding() || null
   const logoSrc = resolvedBranding?.logo_url || '/images/glowsuite-logo.png'
-  const logoAlt = alt || resolvedBranding?.portal_name || 'Glowsuite'
+  const logoAlt = alt || resolvedBranding?.portal_name || 'Saloenza'
   const heightClass = SIZE_MAP[size] || size
 
   if (variant === 'mark') {

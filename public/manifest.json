@@ -1,14 +1,14 @@
 {
   "id": "/",
-  "name": "Glowsuite",
-  "short_name": "Glowsuite",
+  "name": "Saloenza",
+  "short_name": "Saloenza",
   "description": "Premium All-in-One Salon & Spa Management System",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#000000",
-  "theme_color": "#E0229A",
+  "theme_color": "#cc0f67",
   "lang": "en",
   "categories": ["business", "productivity"],
   "icons": [

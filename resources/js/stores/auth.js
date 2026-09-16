@@ -52,7 +52,7 @@ const buildMockSession = (identifier) => {
     },
     tenant: isSysAdmin ? null : {
       id: 1,
-      name: 'Glowsuite',
+      name: 'Saloenza',
       plan: { id: 1, name: 'Free', slug: 'free', price: 0, billing_interval: 'monthly' },
       modules: ['appointments', 'customers', 'staff', 'catalog', 'settings'],
       limits: { max_branches: 1, max_staff: 3, branches_used: 0, staff_used: 0 },

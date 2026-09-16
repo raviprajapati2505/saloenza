@@ -72,7 +72,7 @@ class RazorpayPaymentGateway implements PaymentGatewayInterface
             'razorpay_order_id' => $gatewayOrder['id'] ?? null,
             'razorpay_key_id' => PaymentConfig::razorpayKeyId(),
             'company_name' => (string) ($branding['portal_name'] ?? config('app.name')),
-            'primary_color' => (string) ($branding['primary_color'] ?? '#E0229A'),
+            'primary_color' => (string) ($branding['primary_color'] ?? '#cc0f67'),
             'description' => 'Subscription plan upgrade',
         ];
     }

@@ -147,7 +147,7 @@ describe('OnboardingWizard', () => {
 
   it('renders the brand logo', () => {
     renderWizard()
-    expect(screen.getByRole('img', { name: /Glowsuite/i })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /Saloenza/i })).toBeInTheDocument()
   })
 
   it('shows the sidebar heading', () => {

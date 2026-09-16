@@ -170,8 +170,8 @@ class PlatformSettingsService
         return [
             'portal_name' => (string) ($branding['portal_name'] ?? config('app.name')),
             'logo_url' => $this->logoUrl($branding['logo_path'] ?? null),
-            'primary_color' => (string) ($branding['primary_color'] ?? '#E0229A'),
-            'secondary_color' => (string) ($branding['secondary_color'] ?? '#9125CA'),
+            'primary_color' => (string) ($branding['primary_color'] ?? '#cc0f67'),
+            'secondary_color' => (string) ($branding['secondary_color'] ?? '#8f0a48'),
             'support_email' => (string) ($branding['support_email'] ?? ''),
             'support_phone' => (string) ($branding['support_phone'] ?? ''),
         ];

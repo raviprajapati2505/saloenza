@@ -177,7 +177,7 @@ export default function AnalyticsView() {
     labels: MOCK_DATA.branchRevenue.labels,
     datasets: [{
       data: MOCK_DATA.branchRevenue.data,
-      backgroundColor: ['#9125CA', '#6366f1', '#f59e0b', '#ec4899'],
+      backgroundColor: ['#cc0f67', '#6366f1', '#f59e0b', '#ec4899'],
       borderWidth: 2,
       borderColor: '#fff',
       hoverOffset: 6,
@@ -304,7 +304,7 @@ export default function AnalyticsView() {
                     transition={{ delay: 0.4 + i * 0.07, duration: 0.6, ease: 'easeOut' }}
                     className="h-full rounded-full"
                     style={{
-                      background: ['#9125CA','#6366f1','#f59e0b','#ec4899','#E0229A','#8b5cf6'][i]
+                      background: ['#8f0a48','#6366f1','#f59e0b','#ec4899','#cc0f67','#8b5cf6'][i]
                     }}
                   />
                 </div>

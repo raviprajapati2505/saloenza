@@ -12,7 +12,7 @@ export default function TwoFactorView() {
   const router = useNavigate()
   const auth = useAuthStore()
   const platformBranding = getPlatformBranding()
-  const portalName = platformBranding?.portal_name || 'Glowsuite'
+  const portalName = platformBranding?.portal_name || 'Saloenza'
   const otpRefs = useRef([])
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [useBackupCode, setUseBackupCode] = useState(false)

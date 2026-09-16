@@ -5,8 +5,8 @@
     <title>Receipt {{ $invoiceNumber }}</title>
     <style>
         body { font-family: DejaVu Sans, sans-serif; color: #1e293b; font-size: 12px; line-height: 1.5; }
-        .header { border-bottom: 2px solid {{ $branding['primary_color'] ?? '#E0229A' }}; padding-bottom: 12px; margin-bottom: 18px; }
-        .brand { font-size: 20px; font-weight: bold; color: {{ $branding['primary_color'] ?? '#E0229A' }}; }
+        .header { border-bottom: 2px solid {{ $branding['primary_color'] ?? '#cc0f67' }}; padding-bottom: 12px; margin-bottom: 18px; }
+        .brand { font-size: 20px; font-weight: bold; color: {{ $branding['primary_color'] ?? '#cc0f67' }}; }
         .muted { color: #64748b; }
         .grid { width: 100%; margin-bottom: 16px; }
         .grid td { vertical-align: top; width: 50%; }
@@ -16,7 +16,7 @@
         .totals { width: 100%; margin-top: 16px; }
         .totals td { padding: 4px 0; }
         .totals .label { text-align: right; padding-right: 12px; color: #64748b; }
-        .grand { font-size: 16px; font-weight: bold; color: {{ $branding['primary_color'] ?? '#E0229A' }}; }
+        .grand { font-size: 16px; font-weight: bold; color: {{ $branding['primary_color'] ?? '#cc0f67' }}; }
         .footer { margin-top: 24px; padding-top: 12px; border-top: 1px solid #e2e8f0; text-align: center; color: #64748b; font-size: 11px; }
     </style>
 </head>

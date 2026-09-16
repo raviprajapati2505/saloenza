@@ -186,7 +186,7 @@ export default function AppSidebar({ collapsed = false, onToggleSidebar, mobileO
                   className={cn(
                     "group relative flex items-center rounded-xl px-2.5 py-2 text-[13px] font-medium transition-all duration-200",
                     active 
-                      ? "text-brand-400 bg-brand-500/10 shadow-[inset_0_1px_0_rgba(224,34,154,0.1)]" 
+                      ? "text-brand-400 bg-brand-500/10 shadow-[inset_0_1px_0_rgba(204,15,103,0.1)]" 
                       : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"
                   )}
                 >
@@ -194,7 +194,7 @@ export default function AppSidebar({ collapsed = false, onToggleSidebar, mobileO
                   {active && (
                     <motion.div
                       layoutId="sidebarActiveIndicator"
-                      className="absolute left-0 top-1/2 -mt-2.5 h-5 w-1 rounded-r-full bg-brand-500 shadow-[0_0_10px_rgba(224,34,154,0.8)]"
+                      className="absolute left-0 top-1/2 -mt-2.5 h-5 w-1 rounded-r-full bg-brand-500 shadow-[0_0_10px_rgba(204,15,103,0.8)]"
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     />
                   )}
@@ -284,7 +284,7 @@ export default function AppSidebar({ collapsed = false, onToggleSidebar, mobileO
         {auth.workspace !== 'affiliate' && (auth.isSubscriptionLocked || isFreePlan) && auth.can('settings.view') && (
           <div className="mt-2">
             <Link to="/billing" className={cn(
-              "relative flex w-full items-center justify-center overflow-hidden rounded-xl bg-gradient-to-r from-brand-500 to-brand-700 py-2.5 text-sm font-semibold text-white transition-all hover:from-brand-400 hover:to-brand-600 shadow-[0_4px_15px_rgba(145,37,202,0.3)] hover:shadow-[0_6px_20px_rgba(145,37,202,0.4)]",
+              "relative flex w-full items-center justify-center overflow-hidden rounded-xl bg-gradient-to-r from-brand-500 to-brand-700 py-2.5 text-sm font-semibold text-white transition-all hover:from-brand-400 hover:to-brand-600 shadow-[0_4px_15px_rgba(143,10,72,0.3)] hover:shadow-[0_6px_20px_rgba(143,10,72,0.4)]",
               collapsed ? "px-0" : "px-3"
             )}>
               {collapsed ? (
@@ -358,12 +358,12 @@ export default function AppSidebar({ collapsed = false, onToggleSidebar, mobileO
                         className={cn(
                           "group relative flex items-center rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
                           active
-                            ? "text-brand-400 bg-brand-500/10 shadow-[inset_0_1px_0_rgba(224,34,154,0.1)] font-semibold"
+                            ? "text-brand-400 bg-brand-500/10 shadow-[inset_0_1px_0_rgba(204,15,103,0.1)] font-semibold"
                             : "text-slate-300 hover:bg-slate-800/50 hover:text-white"
                         )}
                       >
                         {active && (
-                          <div className="absolute left-0 top-1/2 -mt-2.5 h-5 w-1 rounded-r-full bg-brand-500 shadow-[0_0_10px_rgba(224,34,154,0.8)]" />
+                          <div className="absolute left-0 top-1/2 -mt-2.5 h-5 w-1 rounded-r-full bg-brand-500 shadow-[0_0_10px_rgba(204,15,103,0.8)]" />
                         )}
                         <Icon className={cn("h-4 w-4 shrink-0 mr-3 transition-colors", active ? "text-brand-400" : "text-slate-400 group-hover:text-slate-200")} strokeWidth={active ? 2.5 : 2} />
                         <span className="truncate flex-1">{itemLabel}</span>
@@ -400,7 +400,7 @@ export default function AppSidebar({ collapsed = false, onToggleSidebar, mobileO
                   <Link
                     to="/billing"
                     onClick={onCloseMobile}
-                    className="flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-brand-500 to-brand-700 py-2.5 text-sm font-semibold text-white shadow-[0_4px_15px_rgba(145,37,202,0.3)]"
+                    className="flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-brand-500 to-brand-700 py-2.5 text-sm font-semibold text-white shadow-[0_4px_15px_rgba(143,10,72,0.3)]"
                   >
                     <Zap className="h-4 w-4 mr-2" fill="currentColor" />
                     {auth.isSubscriptionLocked ? 'Billing & Plans' : 'Upgrade Pro'}

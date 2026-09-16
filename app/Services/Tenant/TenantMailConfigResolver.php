@@ -75,7 +75,7 @@ class TenantMailConfigResolver
             'from' => [
                 'name' => $fromName
                     ?? $this->nullableString($email['from_name'] ?? null)
-                    ?? (string) config('mail.from.name', config('app.name', 'Glowsuite')),
+                    ?? (string) config('mail.from.name', config('app.name', 'Saloenza')),
                 'address' => $fromEmail
                     ?? $this->nullableString($email['from_email'] ?? null)
                     ?? (string) config('mail.from.address', 'hello@example.com'),

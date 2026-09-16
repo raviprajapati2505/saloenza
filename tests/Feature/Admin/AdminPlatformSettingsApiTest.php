@@ -70,7 +70,7 @@ class AdminPlatformSettingsApiTest extends TestCase
         $this->putJson('/api/v1/admin/platform-settings/email', [
             'settings' => [
                 'use_custom' => false,
-                'from_name' => 'Glowsuite',
+                'from_name' => 'Saloenza',
                 'from_email' => 'hello@glowsuite.com',
                 'reply_to' => null,
                 'smtp_host' => '',
