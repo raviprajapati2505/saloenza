@@ -3,7 +3,7 @@ import { format, startOfMonth, subMonths } from 'date-fns'
 import {
   CalendarRange,
   Download,
-  IndianRupee,
+  CircleDollarSign,
   RefreshCw,
   UserRound,
 } from 'lucide-react'
@@ -133,7 +133,7 @@ export default function StaffEarningsView() {
         key: 'commission',
         title: 'Commission earned',
         value: fmt.money(summary.commission_earned ?? 0),
-        icon: IndianRupee,
+        icon: CircleDollarSign,
         color: 'emerald',
       },
     ],

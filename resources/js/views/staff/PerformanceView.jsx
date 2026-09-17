@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns'
-import { Calendar, IndianRupee, Scissors, TrendingUp } from 'lucide-react'
+import { Calendar, CircleDollarSign, Scissors, TrendingUp } from 'lucide-react'
 import PageHeader from '../../components/ui/PageHeader.jsx'
 import BaseSelect from '../../components/ui/BaseSelect.jsx'
 import StatsGrid from '../../components/dashboard/StatsGrid.jsx'
@@ -82,7 +82,7 @@ export default function PerformanceView({ staffId, staffName }) {
       key: 'revenue',
       title: 'Revenue generated',
       value: fmt.money(summary.revenue_generated ?? 0),
-      icon: IndianRupee,
+      icon: CircleDollarSign,
       color: 'brand',
     },
     {

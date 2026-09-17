@@ -10,6 +10,7 @@ import WeeklyHoursInput from '../../components/inputs/WeeklyHoursInput.jsx'
 import PerformanceView from './PerformanceView.jsx'
 import { useAuthStore } from '../../stores/auth'
 import { canMutate } from '../../lib/subscriptionModules.js'
+import { currencySymbol, formatMoney } from '../../lib/tenantFormatting.js'
 
 const EMPTY_SCHEDULE = {
   monday: { enabled: true, open: '09:00', close: '20:00' },
@@ -282,7 +283,7 @@ export default function StaffProfileView({ staffId: propStaffId, onBack, onEdit 
                     <div>
                       <p className="text-[10px] font-bold uppercase text-slate-400">Monthly salary</p>
                       <p className="mt-1 font-semibold text-slate-800">
-                        {staff.per_month_salary != null ? `₹${staff.per_month_salary}` : 'Not set'}
+                        {staff.per_month_salary != null ? formatMoney(staff.per_month_salary, auth) : 'Not set'}
                       </p>
                     </div>
                   </div>

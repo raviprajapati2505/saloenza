@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Search, Plus, ChevronLeft, ChevronRight, Inbox, CalendarDays, List as ListIcon,
-  Edit2, Trash2, Package, Filter, X, ShoppingBag,
+  Edit2, Trash2, Package, Filter, X, ShoppingBag, FileDown, Loader2,
 } from 'lucide-react'
 import { format, startOfWeek, endOfWeek } from 'date-fns'
 import { useCalendar } from '../hooks/useCalendar.jsx'
@@ -22,6 +22,8 @@ import { subscriptionPageSubtitle } from '../lib/subscriptionModules.js'
 import { formatMoney } from '../lib/tenantFormatting.js'
 import SubscriptionAccessFallback from '../components/subscription/SubscriptionAccessFallback.jsx'
 import { isForbiddenError } from '../lib/apiErrors.js'
+import { downloadAppointmentReceipt } from '../services/appointmentService.js'
+import { pushToast } from '../stores/toast.js'
 
 const STATUS_OPTIONS = [
   { value: '', label: 'All statuses' },
@@ -332,6 +334,7 @@ function ListPanel({ canUpdate, canDelete }) {
   const openEditModal = useAppointmentStore(state => state.openEditModal)
 
   const [deleteId, setDeleteId] = React.useState(null)
+  const [downloadingReceiptId, setDownloadingReceiptId] = React.useState(null)
 
   const listFilters = {
     ...(filters.saloon_id ? { saloon_id: Number(filters.saloon_id) } : {}),
@@ -357,6 +360,19 @@ function ListPanel({ canUpdate, canDelete }) {
       setDeleteId(null)
     },
   })
+
+  const handleDownloadReceipt = async (appointmentId) => {
+    if (!appointmentId || downloadingReceiptId) return
+    setDownloadingReceiptId(appointmentId)
+    try {
+      await downloadAppointmentReceipt(appointmentId)
+      pushToast('Receipt downloaded.', 'success')
+    } catch (err) {
+      pushToast(err?.response?.data?.message || 'Unable to download receipt.', 'error')
+    } finally {
+      setDownloadingReceiptId(null)
+    }
+  }
 
   if (isError && isForbiddenError(error)) {
     const mode = error?.response?.data?.subscription_access_mode
@@ -418,7 +434,7 @@ function ListPanel({ canUpdate, canDelete }) {
               <th className="px-4 py-3">When</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3 text-right">Total</th>
-              {(canUpdate || canDelete) && <th className="px-4 py-3 text-right">Actions</th>}
+              <th className="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -467,26 +483,35 @@ function ListPanel({ canUpdate, canDelete }) {
                   )}
                 </td>
                 <td className="px-4 py-3 text-right font-semibold text-slate-800 whitespace-nowrap">{money(appt.grand_total ?? appt.price)}</td>
-                {(canUpdate || canDelete) && (
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-2">
-                      {canUpdate && (
-                        <button onClick={() => openEditModal(appt)} className="p-1.5 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-colors" title="Edit">
-                          <Edit2 className="w-4 h-4" />
+                <td className="px-4 py-3">
+                  <div className="flex items-center justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadReceipt(appt.id)}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-colors disabled:opacity-50"
+                      title="Download Receipt"
+                      disabled={downloadingReceiptId === appt.id}
+                    >
+                      {downloadingReceiptId === appt.id
+                        ? <Loader2 className="w-4 h-4 animate-spin" />
+                        : <FileDown className="w-4 h-4" />}
+                    </button>
+                    {canUpdate && (
+                      <button onClick={() => openEditModal(appt)} className="p-1.5 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-colors" title="Edit">
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                    )}
+                    {canDelete && (
+                      deleteId === appt.id ? (
+                        <button onClick={() => deleteMutation.mutate(appt.id)} className="px-2 py-1 rounded-lg text-xs font-bold text-white bg-rose-600 hover:bg-rose-700" disabled={deleteMutation.isPending}>Confirm</button>
+                      ) : (
+                        <button onClick={() => setDeleteId(appt.id)} className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Delete">
+                          <Trash2 className="w-4 h-4" />
                         </button>
-                      )}
-                      {canDelete && (
-                        deleteId === appt.id ? (
-                          <button onClick={() => deleteMutation.mutate(appt.id)} className="px-2 py-1 rounded-lg text-xs font-bold text-white bg-rose-600 hover:bg-rose-700" disabled={deleteMutation.isPending}>Confirm</button>
-                        ) : (
-                          <button onClick={() => setDeleteId(appt.id)} className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Delete">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )
-                      )}
-                    </div>
-                  </td>
-                )}
+                      )
+                    )}
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>

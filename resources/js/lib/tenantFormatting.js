@@ -1,24 +1,34 @@
+const ALLOWED_CURRENCIES = new Set(['QAR', 'USD'])
+
 const DEFAULT_REGIONAL = {
-  timezone: 'Asia/Kolkata',
-  locale: 'en_IN',
-  currency: 'INR',
+  timezone: 'Asia/Qatar',
+  locale: 'en_QA',
+  currency: 'QAR',
   date_format: 'd M Y',
   time_format: '12h',
 }
 
 const CURRENCY_SYMBOLS = {
-  INR: '₹',
+  QAR: 'ر.ق',
   USD: '$',
-  AED: 'د.إ',
-  GBP: '£',
+}
+
+function normalizeCurrency(code) {
+  const upper = String(code || '').toUpperCase()
+  return ALLOWED_CURRENCIES.has(upper) ? upper : DEFAULT_REGIONAL.currency
 }
 
 export function resolveRegional(auth) {
-  return auth?.tenant?.regional ?? DEFAULT_REGIONAL
+  const regional = auth?.tenant?.regional ?? DEFAULT_REGIONAL
+  return {
+    ...DEFAULT_REGIONAL,
+    ...regional,
+    currency: normalizeCurrency(regional.currency),
+  }
 }
 
 export function currencySymbol(auth) {
-  const code = resolveRegional(auth).currency || 'INR'
+  const code = resolveRegional(auth).currency
   return CURRENCY_SYMBOLS[code] || code
 }
 
@@ -33,12 +43,12 @@ export function formatMoney(value, auth, options = {}) {
   try {
     return new Intl.NumberFormat(regional.locale.replace('_', '-'), {
       style: 'currency',
-      currency: regional.currency || 'INR',
+      currency: regional.currency,
       maximumFractionDigits: options.maximumFractionDigits ?? 0,
     }).format(amount)
   } catch {
     const symbol = currencySymbol(auth)
-    return `${symbol}${amount.toLocaleString('en-IN')}`
+    return `${symbol}${amount.toLocaleString('en-US')}`
   }
 }
 
@@ -59,7 +69,7 @@ export function formatDate(value, auth, options = {}) {
       timeZone: regional.timezone,
     }).format(date)
   } catch {
-    return date.toLocaleDateString('en-IN')
+    return date.toLocaleDateString('en-US')
   }
 }
 

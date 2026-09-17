@@ -144,7 +144,7 @@ export default function RegisterView() {
       <div className="mx-auto flex w-full max-w-md flex-col items-center">
 
       <div className="mb-10">
-  <BrandLogo size="text-6xl" />
+  <BrandLogo size="text-6xl" tone="onDark" />
 </div>
 
 

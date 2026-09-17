@@ -9,7 +9,7 @@ export default function AuthBootstrap() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-black">
       <div className="flex flex-col items-center gap-4 text-center">
-        <BrandLogo variant="mark" size="lg" branding={branding} />
+        <BrandLogo variant="mark" size="lg" tone="onDark" branding={branding} />
         <div>
           <p className="text-sm font-semibold text-white">{portalName}</p>
           <p className="mt-1 text-xs text-slate-400">Loading your workspace…</p>

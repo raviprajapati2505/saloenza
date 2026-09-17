@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import BaseInput from '../../components/ui/BaseInput.jsx'
 import { useAuthStore } from '../../stores/auth'
 import BrandLogo from '../../components/ui/BrandLogo.jsx'
@@ -117,65 +118,77 @@ export default function LoginView() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="grid min-h-screen lg:grid-cols-2">
-        {/* Desktop brand pane */}
-        <section className="relative hidden overflow-hidden lg:flex lg:flex-col lg:justify-between p-12 xl:p-16">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                'radial-gradient(ellipse 80% 60% at 20% 30%, rgba(204,15,103,0.28), transparent 55%), radial-gradient(ellipse 70% 50% at 80% 80%, rgba(143,10,72,0.22), transparent 50%)',
-            }}
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-brand-500/10 blur-3xl"
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -bottom-16 -left-16 h-72 w-72 rounded-full bg-brand-700/15 blur-3xl"
-          />
+    <div className="relative min-h-screen overflow-hidden bg-[#fff7fa] text-slate-900">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(ellipse 90% 70% at 0% 0%, rgba(204,15,103,0.16), transparent 55%), radial-gradient(ellipse 70% 55% at 100% 100%, rgba(143,10,72,0.12), transparent 50%), linear-gradient(165deg, #fff7fa 0%, #ffffff 48%, #fce7ef 100%)',
+        }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 opacity-[0.35]"
+        style={{
+          backgroundImage:
+            'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23cc0f67\' fill-opacity=\'0.06\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+        }}
+      />
 
-          <div className="relative z-10">
+      <div className="relative z-10 grid min-h-screen lg:grid-cols-[1.05fr_0.95fr]">
+        <section className="relative hidden flex-col justify-between px-12 py-14 xl:px-16 xl:py-16 lg:flex">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: 'easeOut' }}
+          >
             <BrandLogo size="xl" className="max-w-[280px]" />
-          </div>
+          </motion.div>
 
-          <div className="relative z-10 max-w-lg">
-            <h1 className="text-4xl font-semibold leading-tight tracking-tight xl:text-5xl">
-              Salon operations,{' '}
-              <span className="bg-gradient-to-r from-brand-400 to-brand-700 bg-clip-text text-transparent">
-                beautifully simple.
-              </span>
-            </h1>
-            <p className="mt-5 text-base leading-relaxed text-white/60">
-              Sign in to manage appointments, staff, billing, and your salon workspace.
+          <motion.div
+            className="max-w-xl"
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.08, ease: 'easeOut' }}
+          >
+            <p className="text-sm font-semibold tracking-[0.2em] text-brand-600 uppercase">
+              {portalName}
             </p>
-          </div>
+            <h1 className="mt-4 text-4xl font-semibold leading-[1.15] tracking-tight text-slate-900 xl:text-5xl">
+              Run your salon with{' '}
+              <span className="bg-gradient-to-r from-brand-500 to-brand-700 bg-clip-text text-transparent">
+                clarity
+              </span>
+              .
+            </h1>
+            <p className="mt-5 max-w-md text-base leading-relaxed text-slate-600">
+              Appointments, staff, and billing in one calm workspace built for busy salon days.
+            </p>
+          </motion.div>
 
-          <p className="relative z-10 text-xs tracking-wide text-white/35">
-            {portalName} · Salon Management System
-          </p>
+          <motion.p
+            className="text-xs tracking-wide text-slate-400"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+          >
+            Salon Management System
+          </motion.p>
         </section>
 
-        {/* Form pane */}
-        <section className="relative flex items-center justify-center px-4 py-10 sm:px-8">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 lg:hidden"
-            style={{
-              background:
-                'radial-gradient(ellipse 90% 50% at 50% 0%, rgba(204,15,103,0.18), transparent 55%)',
-            }}
-          />
-
-          <div className="relative z-10 w-full max-w-md">
+        <section className="relative flex items-center justify-center px-4 py-10 sm:px-8 lg:px-12">
+          <motion.div
+            className="w-full max-w-[420px]"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: 0.05, ease: 'easeOut' }}
+          >
             <div className="mb-8 flex justify-center lg:hidden">
               <BrandLogo size="lg" className="max-w-[220px]" />
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-white p-6 shadow-2xl shadow-black/40 sm:p-8">
+            <div className="rounded-[1.75rem] border border-brand-100/80 bg-white/90 p-6 shadow-[0_24px_60px_-28px_rgba(143,10,72,0.35)] backdrop-blur-sm sm:p-8">
               <h2 className="text-2xl font-bold tracking-tight text-slate-900">Welcome back</h2>
               <p className="mt-1.5 text-sm text-slate-500">
                 Sign in to continue to your workspace.
@@ -195,7 +208,7 @@ export default function LoginView() {
                   label="Email or Phone"
                   type="text"
                   autocomplete="username"
-                  placeholder="you@example.com or +91 98765 43210"
+                  placeholder="you@example.com or +974 5555 5555"
                   error={errors.login}
                   onBlur={validateLogin}
                 />
@@ -261,7 +274,7 @@ export default function LoginView() {
                 </p>
               </div>
             </div>
-          </div>
+          </motion.div>
         </section>
       </div>
     </div>

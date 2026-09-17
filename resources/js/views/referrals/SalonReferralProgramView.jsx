@@ -6,7 +6,7 @@ import {
   Users,
   CheckCircle2,
   Clock,
-  IndianRupee,
+  CircleDollarSign,
   TrendingUp,
 } from 'lucide-react'
 import PageHeader from '../../components/ui/PageHeader.jsx'
@@ -243,7 +243,7 @@ export default function SalonReferralProgramView() {
         <StatCard
           label="Credits Earned"
           value={fmt.money(summary.credits_earned || 0, { maximumFractionDigits: 0 })}
-          icon={IndianRupee}
+          icon={CircleDollarSign}
           accent="emerald"
         />
       </div>

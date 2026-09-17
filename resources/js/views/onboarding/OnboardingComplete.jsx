@@ -34,7 +34,7 @@ export default function OnboardingComplete() {
     return (
       <div className="min-h-screen bg-[#0F172A] px-4 py-10 sm:px-8">
         <div className="mx-auto max-w-3xl">
-          <BrandLogo size="text-6xl" />
+          <BrandLogo size="text-6xl" tone="onDark" />
           <div className="mt-10 rounded-3xl bg-white p-8 shadow-2xl sm:p-10">
             <h1 className="text-3xl font-semibold text-slate-900">Registration submitted</h1>
             <p className="mt-3 text-sm text-slate-600">
@@ -59,7 +59,7 @@ export default function OnboardingComplete() {
     <div className="min-h-screen bg-[#0F172A] px-4 py-10 font-[Inter,ui-sans-serif,system-ui] sm:px-8">
       <div className="mx-auto max-w-5xl">
         <div className="mb-10">
-          <BrandLogo size="text-6xl" />
+          <BrandLogo size="text-6xl" tone="onDark" />
           <p className="mt-2 text-sm text-white/65">Start your salon in one modern workspace</p>
         </div>
 

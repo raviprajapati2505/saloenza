@@ -98,12 +98,19 @@ class TenantSettingsService
         $regional = $this->resolveGroup($salon, 'regional');
 
         return [
-            'timezone' => (string) ($regional['timezone'] ?? config('app.timezone', 'Asia/Kolkata')),
-            'locale' => (string) ($regional['locale'] ?? 'en_IN'),
-            'currency' => (string) ($regional['currency'] ?? 'INR'),
+            'timezone' => (string) ($regional['timezone'] ?? config('app.timezone', 'Asia/Qatar')),
+            'locale' => (string) ($regional['locale'] ?? 'en_QA'),
+            'currency' => $this->normalizeCurrency($regional['currency'] ?? 'QAR'),
             'date_format' => (string) ($regional['date_format'] ?? 'd M Y'),
             'time_format' => (string) ($regional['time_format'] ?? '12h'),
         ];
+    }
+
+    private function normalizeCurrency(mixed $code): string
+    {
+        $upper = strtoupper((string) $code);
+
+        return in_array($upper, ['QAR', 'USD'], true) ? $upper : 'QAR';
     }
 
     /**

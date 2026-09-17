@@ -28,6 +28,7 @@ class PublicBookingService
         private readonly AppointmentBookingService $booking,
         private readonly StaffAvailabilityChecker $availability,
         private readonly AppointmentNotificationService $notifications,
+        private readonly \App\Services\Tenant\TenantSettingsService $tenantSettings,
     ) {}
 
     public function resolveLink(string $token): SalonBookingLink
@@ -83,6 +84,7 @@ class PublicBookingService
                 'phone' => $salon->phone,
                 'working_hours' => $salon->working_hours ?? [],
             ],
+            'regional' => $this->tenantSettings->regionalPayload($salon),
             'link' => [
                 'token' => $link->token,
                 'label' => $link->label,

@@ -129,7 +129,7 @@ export default function AppHeader({ onToggleSidebar, onToggleMobile }) {
 
             {/* Mobile Title with Logo */}
             <div className="flex items-center gap-2.5 md:hidden min-w-0">
-              <BrandLogo variant="mark" size="sm" className="rounded-lg shrink-0" />
+              <BrandLogo variant="mark" size="sm" tone="onDark" className="rounded-lg shrink-0" />
               <div className="flex flex-col min-w-0">
                 <span className="text-xs font-bold text-brand-400 tracking-wide leading-tight truncate">
                   {auth.tenant?.name || getPlatformBranding()?.portal_name || 'Saloenza'}

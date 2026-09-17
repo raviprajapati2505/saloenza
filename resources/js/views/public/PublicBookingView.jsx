@@ -10,6 +10,7 @@ import {
   fetchPublicBookingSlots,
   submitPublicBooking,
 } from '../../services/bookingLinkService.js'
+import { formatMoney } from '../../lib/tenantFormatting.js'
 
 const STEPS = ['Services', 'Date & time', 'Your details', 'Confirm']
 
@@ -28,6 +29,12 @@ export default function PublicBookingView() {
   const [selectedSlot, setSelectedSlot] = useState(null)
   const [customer, setCustomer] = useState({ name: '', phone: '', email: '', notes: '' })
   const [confirmed, setConfirmed] = useState(null)
+
+  const moneyAuth = useMemo(
+    () => ({ tenant: { regional: bootstrap?.regional } }),
+    [bootstrap?.regional],
+  )
+  const money = (value) => formatMoney(value, moneyAuth)
 
   useEffect(() => {
     setLoading(true)
@@ -178,7 +185,7 @@ export default function PublicBookingView() {
                       <div className="flex-1">
                         <div className="flex items-center justify-between gap-3">
                           <p className="font-semibold text-slate-900">{service.name}</p>
-                          <p className="text-sm font-semibold text-slate-700">₹{service.price}</p>
+                          <p className="text-sm font-semibold text-slate-700">{money(service.price)}</p>
                         </div>
                         <p className="mt-1 text-xs text-slate-500">
                           {service.category ? `${service.category} · ` : ''}{service.duration_minutes} min
@@ -215,7 +222,7 @@ export default function PublicBookingView() {
               <BaseInput label="Date" type="date" value={date} min={format(new Date(), 'yyyy-MM-dd')} onChange={(event) => setDate(event.target.value)} />
               <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4 text-sm text-slate-600">
                 <div className="flex items-center gap-2"><Scissors className="h-4 w-4" /> {selectedDetails.length} services selected</div>
-                <div className="mt-1 flex items-center gap-2"><Clock className="h-4 w-4" /> {totalDuration} minutes · ₹{totalPrice}</div>
+                <div className="mt-1 flex items-center gap-2"><Clock className="h-4 w-4" /> {totalDuration} minutes · {money(totalPrice)}</div>
               </div>
               {slotsLoading ? (
                 <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-brand-500" /></div>
@@ -268,7 +275,7 @@ export default function PublicBookingView() {
                 <p><strong>Services:</strong> {selectedDetails.map((service) => service.name).join(', ')}</p>
                 <p className="mt-2"><strong>When:</strong> {selectedSlot ? format(new Date(selectedSlot.starts_at), 'EEE, d MMM yyyy · p') : '—'}</p>
                 <p className="mt-2"><strong>Duration:</strong> {totalDuration} minutes</p>
-                <p className="mt-2"><strong>Estimated total:</strong> ₹{totalPrice}</p>
+                <p className="mt-2"><strong>Estimated total:</strong> {money(totalPrice)}</p>
                 <p className="mt-2"><strong>Name:</strong> {customer.name}</p>
                 <p className="mt-2"><strong>Phone:</strong> {customer.phone}</p>
               </div>

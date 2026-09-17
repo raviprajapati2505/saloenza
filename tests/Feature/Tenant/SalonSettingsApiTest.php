@@ -139,13 +139,13 @@ class SalonSettingsApiTest extends TestCase
             'saloon_id' => $this->owner->saloon_id,
             'group' => 'regional',
             'key' => 'currency',
-            'value' => 'GBP',
+            'value' => 'USD',
         ]);
         SalonSetting::query()->create([
             'saloon_id' => $this->owner->saloon_id,
             'group' => 'regional',
             'key' => 'locale',
-            'value' => 'en_GB',
+            'value' => 'en_US',
         ]);
         \Illuminate\Support\Facades\Cache::forget('salon_settings.'.$this->owner->saloon_id);
 
@@ -153,7 +153,7 @@ class SalonSettingsApiTest extends TestCase
 
         $this->getJson('/api/v1/me')
             ->assertOk()
-            ->assertJsonPath('data.tenant.regional.currency', 'GBP')
-            ->assertJsonPath('data.tenant.regional.locale', 'en_GB');
+            ->assertJsonPath('data.tenant.regional.currency', 'USD')
+            ->assertJsonPath('data.tenant.regional.locale', 'en_US');
     }
 }

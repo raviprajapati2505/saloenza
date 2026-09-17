@@ -18,8 +18,8 @@ vi.mock('../../stores/auth', () => ({
 
 vi.mock('../../hooks/useTenantFormatter.js', () => ({
   useTenantFormatter: () => ({
-    money: (v) => `₹${Number(v).toFixed(0)}`,
-    symbol: () => '₹',
+    money: (v) => `ر.ق${Number(v).toFixed(0)}`,
+    symbol: () => 'ر.ق',
   }),
 }))
 

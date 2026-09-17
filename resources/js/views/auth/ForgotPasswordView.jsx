@@ -126,7 +126,7 @@ export default function ForgotPasswordView() {
     <div className="min-h-screen bg-[#0F172A] px-4 py-8 font-[Inter,ui-sans-serif,system-ui] sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-md">
         <div className="mb-10">
-          <BrandLogo size="text-6xl" />
+          <BrandLogo size="text-6xl" tone="onDark" />
         </div>
 
         <div className="mb-6 rounded-2xl border border-white/15 bg-white/5 p-4 text-white/85">

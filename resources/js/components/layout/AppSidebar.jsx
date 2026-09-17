@@ -141,9 +141,9 @@ export default function AppSidebar({ collapsed = false, onToggleSidebar, mobileO
       <div className="relative flex-shrink-0 border-b border-slate-800/60 py-4 px-3 min-h-[88px] flex items-center">
         <div className={cn("flex items-center w-full min-w-0", collapsed ? "justify-center" : "pr-3")}>
           {collapsed ? (
-            <BrandLogo variant="mark" size="md" className="rounded-xl" />
+            <BrandLogo variant="mark" size="md" tone="onDark" className="rounded-xl" />
           ) : (
-            <BrandLogo size="h-[58px]" className="w-full max-w-[220px]" />
+            <BrandLogo size="h-[58px]" tone="onDark" className="w-full max-w-[220px]" />
           )}
         </div>
         
@@ -325,7 +325,7 @@ export default function AppSidebar({ collapsed = false, onToggleSidebar, mobileO
           >
             {/* Mobile Header */}
             <div className="flex-shrink-0 border-b border-slate-800/60 px-3 py-3 min-h-[80px] flex items-center justify-between gap-3">
-              <BrandLogo size="h-[52px]" className="max-w-[200px] min-w-0" />
+              <BrandLogo size="h-[52px]" tone="onDark" className="max-w-[200px] min-w-0" />
 
               <button
                 type="button"

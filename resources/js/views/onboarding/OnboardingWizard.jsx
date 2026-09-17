@@ -177,7 +177,7 @@ export default function OnboardingWizard() {
       <div className="mx-auto grid max-w-6xl overflow-hidden rounded-3xl bg-white shadow-2xl lg:grid-cols-3">
         <aside className="bg-slate-950 p-6 text-white lg:col-span-1">
           <div className="mb-8">
-            <BrandLogo size="text-5xl" />
+            <BrandLogo size="text-5xl" tone="onDark" />
             <p className="mt-2 text-sm text-white/65">Start your salon in one modern workspace</p>
           </div>
 

@@ -16,21 +16,21 @@ const usAuth = {
   },
 }
 
-const inAuth = {
+const qaAuth = {
   tenant: {
     regional: {
-      currency: 'INR',
-      locale: 'en_IN',
-      timezone: 'Asia/Kolkata',
+      currency: 'QAR',
+      locale: 'en_QA',
+      timezone: 'Asia/Qatar',
     },
   },
 }
 
 describe('tenantFormatting', () => {
-  it('formats INR amounts from tenant regional settings', () => {
-    const formatted = formatMoney(1500, inAuth)
+  it('formats QAR amounts from tenant regional settings', () => {
+    const formatted = formatMoney(1500, qaAuth)
     expect(formatted).toContain('1,500')
-    expect(formatted).toMatch(/₹|INR/)
+    expect(formatted).toMatch(/QAR|ر\.ق/)
   })
 
   it('formats USD amounts from tenant regional settings', () => {
@@ -41,17 +41,24 @@ describe('tenantFormatting', () => {
 
   it('exposes currency symbol helper', () => {
     expect(currencySymbol(usAuth)).toBe('$')
-    expect(currencySymbol(inAuth)).toBe('₹')
+    expect(currencySymbol(qaAuth)).toBe('ر.ق')
+  })
+
+  it('falls back to QAR for unsupported currencies', () => {
+    const legacyAuth = {
+      tenant: { regional: { currency: 'INR', locale: 'en_IN', timezone: 'Asia/Kolkata' } },
+    }
+    expect(currencySymbol(legacyAuth)).toBe('ر.ق')
   })
 
   it('formats plan prices with billing interval', () => {
-    expect(formatPlanPrice({ price: 0, slug: 'free' }, inAuth)).toBe('Free')
-    expect(formatPlanPrice({ price: 999, billing_interval: 'month' }, inAuth)).toContain('/ month')
+    expect(formatPlanPrice({ price: 0, slug: 'free' }, qaAuth)).toBe('Free')
+    expect(formatPlanPrice({ price: 999, billing_interval: 'month' }, qaAuth)).toContain('/ month')
   })
 
   it('createTenantFormatter bundles helpers', () => {
-    const fmt = createTenantFormatter(inAuth)
-    expect(fmt.symbol()).toBe('₹')
+    const fmt = createTenantFormatter(qaAuth)
+    expect(fmt.symbol()).toBe('ر.ق')
     expect(fmt.money(500)).toContain('500')
   })
 })

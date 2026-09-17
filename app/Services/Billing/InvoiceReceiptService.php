@@ -62,14 +62,16 @@ class InvoiceReceiptService
             : [];
         $regional = $salon
             ? $this->tenantConfig->group($salon, 'regional')
-            : ['currency' => 'INR'];
+            : ['currency' => 'QAR'];
 
-        $currency = (string) ($regional['currency'] ?? 'INR');
+        $currency = (string) ($regional['currency'] ?? 'QAR');
+        $allowed = ['QAR', 'USD'];
+        if (! in_array($currency, $allowed, true)) {
+            $currency = 'QAR';
+        }
         $currencySymbol = match ($currency) {
             'USD' => '$',
-            'GBP' => '£',
-            'AED' => 'AED ',
-            default => '₹',
+            default => 'ر.ق',
         };
 
         $serviceLines = $appointment->services->map(fn ($line): array => [

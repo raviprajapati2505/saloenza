@@ -183,11 +183,15 @@ class PlatformSettingsService
     public function regionalPayload(): array
     {
         $regional = $this->getGroupValues('regional');
+        $currency = strtoupper((string) ($regional['currency'] ?? 'QAR'));
+        if (! in_array($currency, ['QAR', 'USD'], true)) {
+            $currency = 'QAR';
+        }
 
         return [
-            'timezone' => (string) ($regional['timezone'] ?? config('app.timezone', 'Asia/Kolkata')),
-            'locale' => (string) ($regional['locale'] ?? 'en_IN'),
-            'currency' => (string) ($regional['currency'] ?? 'INR'),
+            'timezone' => (string) ($regional['timezone'] ?? config('app.timezone', 'Asia/Qatar')),
+            'locale' => (string) ($regional['locale'] ?? 'en_QA'),
+            'currency' => $currency,
             'date_format' => (string) ($regional['date_format'] ?? 'd M Y'),
             'time_format' => (string) ($regional['time_format'] ?? '12h'),
         ];

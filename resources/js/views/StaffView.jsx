@@ -14,6 +14,7 @@ import { useAuthStore } from '../stores/auth'
 import { TENANT_PERMISSIONS } from '../lib/tenantPermissions'
 import { authHasModule, subscriptionPageSubtitle } from '../lib/subscriptionModules.js'
 import { apiGet, apiPost, apiPut, parseItem, parseList } from '../lib/apiHelpers'
+import { currencySymbol } from '../lib/tenantFormatting.js'
 
 const STAFF_LAYOUT_KEY = 'staff.layoutMode'
 
@@ -181,6 +182,8 @@ function StaffRoleGroups({
 }
 
 function StaffFormModal({ open, staff, roles, saloons, branches, isSystemAdmin, isBranchScoped, lockedBranchId, onClose, onSaved, canManage, showRolesUpgradeHint = false }) {
+  const auth = useAuthStore()
+  const salarySymbol = currencySymbol(auth)
   const [form, setForm] = useState({
     firstname: '',
     lastname: '',
@@ -366,7 +369,7 @@ function StaffFormModal({ open, staff, roles, saloons, branches, isSystemAdmin, 
               placeholder="e.g. 20"
             />
             <BaseInput
-              label="Monthly salary (₹)"
+              label={`Monthly salary (${salarySymbol})`}
               type="number"
               modelValue={form.per_month_salary}
               onUpdateModelValue={v => setForm({ ...form, per_month_salary: v })}

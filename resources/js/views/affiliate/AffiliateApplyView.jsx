@@ -89,7 +89,7 @@ export default function AffiliateApplyView() {
     return (
       <div className="min-h-screen bg-[#0F172A] text-white">
         <div className="mx-auto flex min-h-screen max-w-lg flex-col justify-center px-6 py-12">
-          <BrandLogo />
+          <BrandLogo tone="onDark" />
           <div className="mt-8 rounded-3xl bg-white p-8 text-slate-900 shadow-xl">
             <h1 className="text-2xl font-semibold">Application submitted</h1>
             <p className="mt-3 text-sm text-slate-600">
@@ -113,7 +113,7 @@ export default function AffiliateApplyView() {
     <div className="min-h-screen bg-[#0F172A] text-white">
       <div className="mx-auto grid min-h-screen max-w-6xl gap-8 px-6 py-10 lg:grid-cols-2 lg:items-center">
         <section className="hidden lg:block">
-          <BrandLogo />
+          <BrandLogo tone="onDark" />
           <h1 className="mt-10 text-4xl font-semibold tracking-tight">Become an affiliate partner</h1>
           <p className="mt-4 max-w-md text-sm text-white/70">
             Apply to refer salons, earn onboarding and renewal commissions, and manage payouts from your partner portal.

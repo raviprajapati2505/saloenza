@@ -21,6 +21,9 @@ const SIZE_MAP = {
 /**
  * Salon or platform brand mark.
  * Uses tenant branding when available, otherwise platform default.
+ *
+ * @param {'auto' | 'onDark' | 'onLight'} [tone]
+ *   onDark — light plate so dark wordmarks stay readable on black/navy shells
  */
 export default function BrandLogo({
   className = '',
@@ -28,15 +31,17 @@ export default function BrandLogo({
   variant = 'full',
   alt,
   branding,
+  tone = 'auto',
 }) {
   const auth = useAuthStore()
   const resolvedBranding = branding || auth.tenant?.branding || getPlatformBranding() || null
   const logoSrc = resolvedBranding?.logo_url || '/images/glowsuite-logo.png'
   const logoAlt = alt || resolvedBranding?.portal_name || 'Saloenza'
   const heightClass = SIZE_MAP[size] || size
+  const onDark = tone === 'onDark'
 
   if (variant === 'mark') {
-    return (
+    const mark = (
       <img
         src={logoSrc}
         alt={logoAlt}
@@ -44,17 +49,38 @@ export default function BrandLogo({
           'shrink-0 rounded-lg object-cover object-left',
           heightClass,
           'aspect-square',
+          onDark ? 'bg-white' : null,
           className,
         )}
       />
     )
+
+    if (!onDark) return mark
+
+    return (
+      <span className="inline-flex shrink-0 items-center justify-center rounded-xl bg-white p-1 shadow-sm ring-1 ring-white/80">
+        {mark}
+      </span>
+    )
   }
 
-  return (
+  const image = (
     <img
       src={logoSrc}
       alt={logoAlt}
       className={cn('w-auto max-w-full object-contain object-left', heightClass, className)}
     />
+  )
+
+  if (!onDark) return image
+
+  return (
+    <span
+      className={cn(
+        'inline-flex max-w-full items-center rounded-2xl bg-white px-3 py-2 shadow-sm ring-1 ring-black/5',
+      )}
+    >
+      {image}
+    </span>
   )
 }

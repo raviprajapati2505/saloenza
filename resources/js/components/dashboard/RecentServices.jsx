@@ -1,5 +1,5 @@
 import React from 'react'
-import { IndianRupee, Scissors } from 'lucide-react'
+import { CircleDollarSign, Scissors } from 'lucide-react'
 import BaseBadge from '../ui/BaseBadge.jsx'
 import { formatMoneyDefault } from '../../lib/tenantFormatting.js'
 
@@ -42,9 +42,9 @@ export default function RecentServices({
       {summary ? (
         <div className="mb-5 grid grid-cols-3 gap-2">
           {[
-            { label: 'Total value', value: formatMoney(summary.total), icon: IndianRupee },
-            { label: 'Paid', value: formatMoney(summary.paid), icon: IndianRupee },
-            { label: 'Pending', value: formatMoney(summary.pending), icon: IndianRupee },
+            { label: 'Total value', value: formatMoney(summary.total), icon: CircleDollarSign },
+            { label: 'Paid', value: formatMoney(summary.paid), icon: CircleDollarSign },
+            { label: 'Pending', value: formatMoney(summary.pending), icon: CircleDollarSign },
           ].map((card) => (
             <div key={card.label} className="rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2.5">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">{card.label}</p>
