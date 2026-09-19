@@ -5,6 +5,7 @@ namespace Tests\Feature\Subscription;
 use App\Models\Saloon;
 use App\Models\SubscriptionPlan;
 use App\Models\SubscriptionUpgradeOrder;
+use App\Models\SaloonSubscription;
 use Database\Seeders\SubscriptionPlanSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -22,7 +23,7 @@ class PaidPlanActivationRequestTest extends TestCase
         $this->seed(SubscriptionPlanSeeder::class);
     }
 
-    public function test_paid_plan_onboarding_creates_offline_request_and_locks_salon(): void
+    public function test_paid_plan_onboarding_starts_trial_and_keeps_offline_request(): void
     {
         $owner = $this->createOwnerUser([
             'email' => 'paid.onboard@example.com',
@@ -42,8 +43,8 @@ class PaidPlanActivationRequestTest extends TestCase
 
         $this->assertDatabaseHas('saloons', [
             'id' => $owner->saloon_id,
-            'is_active' => false,
-            'activation_status' => Saloon::ACTIVATION_PENDING,
+            'is_active' => true,
+            'activation_status' => Saloon::ACTIVATION_ACTIVE,
         ]);
 
         $this->assertDatabaseHas('subscription_upgrade_orders', [
@@ -53,18 +54,19 @@ class PaidPlanActivationRequestTest extends TestCase
             'status' => SubscriptionUpgradeOrder::STATUS_PENDING,
         ]);
 
-        $free = SubscriptionPlan::query()->where('slug', 'free')->first();
-        if ($free !== null) {
-            $this->assertDatabaseHas('saloon_subscriptions', [
-                'saloon_id' => $owner->saloon_id,
-                'subscription_plan_id' => $free->id,
-            ]);
-        }
+        $this->assertDatabaseHas('saloon_subscriptions', [
+            'saloon_id' => $owner->saloon_id,
+            'subscription_plan_id' => $basic->id,
+            'status' => SaloonSubscription::STATUS_TRIALING,
+        ]);
 
         $this->getJson('/api/v1/me')
             ->assertOk()
-            ->assertJsonPath('data.tenant.activation_pending', true)
-            ->assertJsonPath('data.tenant.requested_plan.slug', 'basic');
+            ->assertJsonPath('data.tenant.activation_pending', false)
+            ->assertJsonPath('data.tenant.plan.slug', 'basic');
+
+        $modules = $this->getJson('/api/v1/me')->json('data.subscription_modules');
+        $this->assertContains('inventory', $modules);
     }
 
     public function test_admin_approval_activates_salon_and_assigns_paid_plan(): void

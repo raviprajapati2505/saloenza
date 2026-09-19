@@ -147,8 +147,11 @@ class SubscriptionUpgradeService
     }
 
     /**
-     * Paid plan selected during self-serve onboarding: keep Free assigned,
-     * create an offline upgrade request, and lock the salon until admin activation.
+     * Paid plan selected during self-serve onboarding.
+     *
+     * Plans with a trial start that paid plan immediately (so modules like inventory
+     * match the selected plan) while a pending offline payment order is still created.
+     * Plans without a trial stay on Free and remain locked until admin activation.
      */
     public function requestPaidPlanActivation(User $user, Saloon $saloon, SubscriptionPlan $targetPlan): SubscriptionUpgradeOrder
     {
@@ -158,20 +161,33 @@ class SubscriptionUpgradeService
 
         $this->assertPlanChangeAllowed($saloon, $targetPlan);
 
-        $freePlan = SubscriptionPlan::query()->where('slug', 'free')->first()
-            ?? SubscriptionPlan::query()->where('slug', 'free-trial')->first();
+        $startsWithTrial = (int) $targetPlan->trial_days > 0;
+        $previousPlan = $this->entitlements->activePlan($saloon);
 
-        $active = $this->entitlements->activeSubscription($saloon);
-        $activePlan = $this->entitlements->activePlan($saloon);
+        if ($startsWithTrial) {
+            $this->entitlements->assignPlan($saloon, $targetPlan, startTrial: true);
+            $saloon->markActivated();
+        } else {
+            $freePlan = SubscriptionPlan::query()->where('slug', 'free')->first()
+                ?? SubscriptionPlan::query()->where('slug', 'free-trial')->first();
 
-        if ($freePlan !== null && ($active === null || $activePlan?->isPaidPlan())) {
-            $this->entitlements->assignPlan($saloon, $freePlan, startTrial: true);
+            $active = $this->entitlements->activeSubscription($saloon);
+            $activePlan = $this->entitlements->activePlan($saloon);
+
+            if ($freePlan !== null && ($active === null || $activePlan?->isPaidPlan())) {
+                $this->entitlements->assignPlan($saloon, $freePlan, startTrial: true);
+            }
         }
 
         $existing = $this->pendingOrderForSaloon($saloon);
         if ($existing !== null) {
             if ((int) $existing->to_subscription_plan_id === (int) $targetPlan->id) {
-                $saloon->markActivationPending();
+                if ($startsWithTrial) {
+                    $this->entitlements->assignPlan($saloon, $targetPlan, startTrial: true);
+                    $saloon->markActivated();
+                } else {
+                    $saloon->markActivationPending();
+                }
 
                 return $existing;
             }
@@ -182,22 +198,27 @@ class SubscriptionUpgradeService
             ]);
         }
 
-        $currentPlan = $this->entitlements->activePlan($saloon);
-        $amount = $this->calculateUpgradeAmount($currentPlan, $targetPlan);
+        $amount = $this->calculateUpgradeAmount($previousPlan, $targetPlan);
 
         $order = SubscriptionUpgradeOrder::query()->create([
             'saloon_id' => $saloon->id,
             'requested_by_user_id' => $user->id,
-            'from_subscription_plan_id' => $currentPlan?->id,
+            'from_subscription_plan_id' => $previousPlan?->id,
             'to_subscription_plan_id' => $targetPlan->id,
             'amount' => $amount > 0 ? $amount : (float) $targetPlan->price,
             'currency' => PaymentConfig::currency(),
             'channel' => SubscriptionUpgradeOrder::CHANNEL_MANUAL,
             'status' => SubscriptionUpgradeOrder::STATUS_PENDING,
-            'notes' => 'Paid plan selected during salon onboarding. Awaiting offline payment and platform activation.',
+            'notes' => $startsWithTrial
+                ? 'Paid plan trial started during salon onboarding. Awaiting offline payment confirmation.'
+                : 'Paid plan selected during salon onboarding. Awaiting offline payment and platform activation.',
         ]);
 
-        $saloon->markActivationPending();
+        if ($startsWithTrial) {
+            $saloon->markActivated();
+        } else {
+            $saloon->markActivationPending();
+        }
 
         $salonName = $saloon->name ?: 'A salon';
         $planName = $targetPlan->name ?: 'a paid plan';
@@ -205,7 +226,9 @@ class SubscriptionUpgradeService
         $this->platformAdminNotifier->notify(
             event: 'subscription.activation.requested',
             title: 'Salon activation requested',
-            body: "{$salonName} requested {$planName}. Contact them to collect offline payment, then approve to activate.",
+            body: $startsWithTrial
+                ? "{$salonName} started a {$planName} trial. Collect offline payment and approve to convert to a paid subscription."
+                : "{$salonName} requested {$planName}. Contact them to collect offline payment, then approve to activate.",
             actionUrl: '/admin/subscription-upgrades?status=pending',
             requiredPermissions: ['platform.upgrade_requests.view'],
             meta: [

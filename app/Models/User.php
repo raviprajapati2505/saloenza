@@ -112,6 +112,25 @@ class User extends Authenticatable
         return $this->hasRoleCode(RoleCodes::SALON_FRANCHISE_OWNER);
     }
 
+    public function shouldOnboard(): bool
+    {
+        $this->loadMissing(['role', 'affiliatePartner']);
+
+        if ($this->affiliatePartner !== null || $this->role?->scope === 'affiliate') {
+            return false;
+        }
+
+        if ($this->is_system_admin || $this->role?->scope === 'platform') {
+            return false;
+        }
+
+        if (! $this->isFranchiseOwner()) {
+            return false;
+        }
+
+        return $this->onboarding_completed_at === null;
+    }
+
     public function isAffiliatePartner(): bool
     {
         return $this->hasRoleCode(RoleCodes::AFFILIATE_PARTNER);

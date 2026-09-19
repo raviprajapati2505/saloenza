@@ -38,14 +38,10 @@ class LoginUserAction
 
         $token = $this->userRepository->createToken($user, $deviceName !== '' ? $deviceName : 'web');
 
-        $shouldOnboard = $user->affiliatePartner !== null
-            ? false
-            : is_null($user->onboarding_completed_at);
-
         return [
             'user' => $user,
             'token' => $token,
-            'should_onboard' => $shouldOnboard,
+            'should_onboard' => $user->shouldOnboard(),
         ];
     }
 

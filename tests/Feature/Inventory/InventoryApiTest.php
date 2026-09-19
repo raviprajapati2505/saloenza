@@ -153,4 +153,24 @@ class InventoryApiTest extends TestCase
         $this->getJson("/api/v1/inventory/summary?branch_id={$this->branch->id}")
             ->assertForbidden();
     }
+
+    public function test_basic_plan_includes_inventory_and_owner_can_access(): void
+    {
+        $this->seed(\Database\Seeders\SubscriptionPlanSeeder::class);
+        $this->assignDefaultSubscription($this->saloon, 'basic');
+        Sanctum::actingAs($this->owner);
+
+        $basic = \App\Models\SubscriptionPlan::query()->where('slug', 'basic')->firstOrFail();
+        $this->assertContains(\App\Support\Subscription\SubscriptionModules::INVENTORY, $basic->moduleList());
+
+        $this->getJson('/api/v1/me')
+            ->assertOk()
+            ->assertJsonPath('data.tenant.plan.slug', 'basic');
+
+        $modules = $this->getJson('/api/v1/me')->json('data.subscription_modules');
+        $this->assertContains('inventory', $modules);
+
+        $this->getJson("/api/v1/inventory/summary?branch_id={$this->branch->id}")
+            ->assertOk();
+    }
 }

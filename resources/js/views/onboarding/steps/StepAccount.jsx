@@ -50,7 +50,7 @@ const StepAccount = forwardRef(function StepAccount({ modelValue }, ref) {
     <div>
       <h2 className="text-2xl font-semibold text-slate-900">Choose Your Plan</h2>
       <p className="mt-1 text-sm text-slate-500">
-        Free plans start immediately. Paid plans submit an activation request — our team collects offline payment and activates your salon.
+        Free plans start immediately. Paid plans with a trial start that trial right away — our team still collects offline payment to convert you to a paid subscription.
       </p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">

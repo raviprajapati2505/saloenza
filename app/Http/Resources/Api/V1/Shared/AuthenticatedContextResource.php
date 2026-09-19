@@ -39,9 +39,7 @@ class AuthenticatedContextResource extends JsonResource
             'tenant' => $saloon ? new TenantResource($saloon) : null,
             'affiliate_partner' => $user->affiliatePartner ? new AffiliatePartnerResource($user->affiliatePartner) : null,
             'is_system_admin' => (bool) $user->is_system_admin,
-            'should_onboard' => ($user->affiliatePartner !== null || $user->role?->scope === 'affiliate')
-                ? false
-                : is_null($user->onboarding_completed_at),
+            'should_onboard' => $user->shouldOnboard(),
             'workspace' => $workspace,
             'role' => $user->role ? new RoleResource($user->role) : null,
             'permissions' => new PermissionsCollection(UserPermissions::codesFor($user)),

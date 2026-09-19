@@ -173,6 +173,7 @@ class StaffController extends Controller
             'notes' => $request->validated('notes'),
             'joined_at' => $request->validated('joined_at') ?? now()->toDateString(),
             'weekly_schedule' => $request->validated('weekly_schedule'),
+            'onboarding_completed_at' => now(),
         ]);
 
         $staff->forceFill(['is_system_admin' => false])->save();
