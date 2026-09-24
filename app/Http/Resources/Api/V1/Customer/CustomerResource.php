@@ -48,8 +48,10 @@ class CustomerResource extends JsonResource
             'name' => $this->name,
             'email' => $identity['email'],
             'phone' => $identity['phone'],
+            'whatsapp' => $identity['whatsapp'],
             'can_view_contact' => $canViewContact,
             'has_phone' => $identity['has_phone'],
+            'has_whatsapp' => $identity['has_whatsapp'],
             'has_email' => $identity['has_email'],
             'birthday' => $this->birthday?->toDateString(),
             'anniversary' => $this->anniversary?->toDateString(),
@@ -67,6 +69,23 @@ class CustomerResource extends JsonResource
             'appointments_count' => $this->when(
                 $this->appointments_count !== null,
                 fn () => (int) $this->appointments_count,
+            ),
+            'clv' => $this->when(
+                $this->relationLoaded('valueStats') && $this->valueStats->isNotEmpty(),
+                function () {
+                    $stat = $this->valueStats->first();
+
+                    return [
+                        'clv_score' => (int) $stat->clv_score,
+                        'clv_tier' => (string) $stat->clv_tier,
+                        'lifetime_spend' => (float) $stat->lifetime_spend,
+                        'visit_count' => (int) $stat->visit_count,
+                        'lapse_status' => (string) $stat->lapse_status,
+                        'churn_risk_score' => $stat->churn_risk_score !== null
+                            ? (int) $stat->churn_risk_score
+                            : null,
+                    ];
+                },
             ),
             'visit_stats' => $this->when($visitStats !== null, $visitStats),
             'recent_visits' => $this->when(

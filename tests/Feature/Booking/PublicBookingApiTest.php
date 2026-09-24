@@ -74,6 +74,7 @@ class PublicBookingApiTest extends TestCase
 
         $this->postJson('/api/v1/public/book/'.$link->token, [
             'service_ids' => [$service->id],
+            'staff_id' => $staff->id,
             'starts_at' => $startsAt->toISOString(),
             'customer_name' => 'Online Guest',
             'customer_phone' => '+919444444444',
@@ -106,7 +107,7 @@ class PublicBookingApiTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->createStaffUser([
+        $staff = $this->createStaffUser([
             'saloon_id' => $owner->saloon_id,
             'branch_id' => $branch->id,
         ]);
@@ -147,12 +148,14 @@ class PublicBookingApiTest extends TestCase
 
         $this->getJson('/api/v1/public/book/'.$link->token)
             ->assertOk()
-            ->assertJsonPath('data.services.0.id', $service->id);
+            ->assertJsonPath('data.services.0.id', $service->id)
+            ->assertJsonPath('data.staff.0.id', $staff->id);
 
         $startsAt = now()->addDay()->setTime(12, 0);
 
         $this->postJson('/api/v1/public/book/'.$link->token, [
             'service_ids' => [$service->id],
+            'staff_id' => $staff->id,
             'starts_at' => $startsAt->toISOString(),
             'customer_name' => 'Variant Guest',
             'customer_phone' => '+919333222111',
@@ -199,7 +202,7 @@ class PublicBookingApiTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->createStaffUser([
+        $staff = $this->createStaffUser([
             'saloon_id' => $owner->saloon_id,
             'branch_id' => $branch->id,
             'weekly_schedule' => [
@@ -243,23 +246,30 @@ class PublicBookingApiTest extends TestCase
 
         $saturday = now()->next('Saturday')->toDateString();
 
-        $this->getJson('/api/v1/public/book/'.$link->token.'/slots?date='.$saturday.'&service_ids[]='.$service->id)
+        $saturdaySlots = $this->getJson(
+            '/api/v1/public/book/'.$link->token.'/slots?date='.$saturday.'&staff_id='.$staff->id.'&service_ids[]='.$service->id
+        )
             ->assertOk()
-            ->assertJsonPath('data.slots', []);
+            ->json('data.slots');
+
+        $this->assertTrue(
+            collect($saturdaySlots)->every(fn (array $slot): bool => $slot['available'] === false)
+        );
 
         $monday = now()->next('Monday')->toDateString();
 
-        $this->getJson('/api/v1/public/book/'.$link->token.'/slots?date='.$monday.'&service_ids[]='.$service->id)
+        $mondaySlots = $this->getJson(
+            '/api/v1/public/book/'.$link->token.'/slots?date='.$monday.'&staff_id='.$staff->id.'&service_ids[]='.$service->id
+        )
             ->assertOk()
-            ->assertJson(fn ($json) => $json->has('data.slots')->etc());
+            ->json('data.slots');
 
-        $this->assertNotEmpty(
-            $this->getJson('/api/v1/public/book/'.$link->token.'/slots?date='.$monday.'&service_ids[]='.$service->id)
-                ->json('data.slots'),
+        $this->assertTrue(
+            collect($mondaySlots)->contains(fn (array $slot): bool => $slot['available'] === true)
         );
     }
 
-    public function test_public_booking_assigns_different_staff_per_service_line(): void
+    public function test_public_booking_uses_selected_staff_for_all_service_lines(): void
     {
         $owner = $this->actingAsOwner();
         $branch = \App\Models\SaloonBranch::query()->create([
@@ -338,8 +348,17 @@ class PublicBookingApiTest extends TestCase
 
         $startsAt = now()->next('Monday')->setTime(11, 0);
 
+        $this->postJson('/api/v1/public/book/'.$link->token, [
+            'service_ids' => [$cut->id, $color->id],
+            'staff_id' => $morningOnly->id,
+            'starts_at' => $startsAt->toISOString(),
+            'customer_name' => 'Unavailable Guest',
+            'customer_phone' => '+919777777770',
+        ])->assertStatus(422);
+
         $response = $this->postJson('/api/v1/public/book/'.$link->token, [
             'service_ids' => [$cut->id, $color->id],
+            'staff_id' => $fullDay->id,
             'starts_at' => $startsAt->toISOString(),
             'customer_name' => 'Combo Guest',
             'customer_phone' => '+919777777777',
@@ -356,8 +375,7 @@ class PublicBookingApiTest extends TestCase
         $this->assertCount(2, $lines);
         $this->assertSame($cut->id, $lines[0]->service_id);
         $this->assertSame($color->id, $lines[1]->service_id);
-        $this->assertSame($morningOnly->id, $lines[0]->staff_id);
+        $this->assertSame($fullDay->id, $lines[0]->staff_id);
         $this->assertSame($fullDay->id, $lines[1]->staff_id);
-        $this->assertNotSame($lines[0]->staff_id, $lines[1]->staff_id);
     }
 }

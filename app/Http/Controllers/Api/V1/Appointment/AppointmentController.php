@@ -14,8 +14,10 @@ use App\Models\SaloonBranch;
 use App\Models\User;
 use App\Services\Appointment\AppointmentBookingService;
 use App\Services\Appointment\AppointmentNotificationService;
+use App\Services\Waitlist\WaitlistService;
 use App\Support\Api\ListQuery;
 use App\Support\Appointment\AppointmentPayment;
+use App\Support\Appointment\AppointmentStatus;
 use App\Support\Branch\BranchScope;
 use App\Support\Customer\CustomerContactAccess;
 use App\Support\Customer\CustomerContactPayload;
@@ -31,6 +33,7 @@ class AppointmentController extends Controller
     public function __construct(
         private readonly AppointmentBookingService $booking,
         private readonly AppointmentNotificationService $appointmentNotifications,
+        private readonly WaitlistService $waitlist,
     ) {}
 
     public function index(Request $request): JsonResponse
@@ -203,6 +206,17 @@ class AppointmentController extends Controller
         $previousStatus = $appointment->status;
         $appointment = $this->booking->update($appointment, $payload, $user);
         $this->appointmentNotifications->appointmentUpdated($appointment, $previousStatus);
+
+        if (
+            $previousStatus !== AppointmentStatus::CANCELLED
+            && $appointment->status === AppointmentStatus::CANCELLED
+        ) {
+            try {
+                $this->waitlist->onSlotReleased($appointment);
+            } catch (\Throwable) {
+                // Waitlist matching must never block appointment cancellation.
+            }
+        }
 
         return response()->json([
             'message' => 'Appointment updated successfully.',

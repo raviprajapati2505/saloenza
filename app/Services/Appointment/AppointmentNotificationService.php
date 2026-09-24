@@ -70,13 +70,13 @@ class AppointmentNotificationService
         $customer = $appointment->customer;
         if ($customer === null) {
             throw ValidationException::withMessages([
-                'customer' => 'Attach a customer with a phone or email before sending a payment reminder.',
+                'customer' => 'Attach a customer with an email before sending a payment reminder.',
             ]);
         }
 
-        if (! filled($customer->email) && ! filled($customer->phone)) {
+        if (! filled($customer->email)) {
             throw ValidationException::withMessages([
-                'customer' => 'This customer has no email or phone number on file.',
+                'customer' => 'This customer has no email address on file.',
             ]);
         }
 
@@ -91,68 +91,31 @@ class AppointmentNotificationService
         }
 
         $notificationKey = $respectPreference ? 'payment_outstanding_reminder' : null;
-        $sent = false;
 
-        if ($customer->email) {
-            $sent = $this->notifications->sendMail(
-                $salon,
-                $customer->email,
-                new OutstandingPaymentReminderMail($salon, $appointment, $customer, $due),
-                $notificationKey,
-                false,
-            ) || $sent;
-        }
-
-        if ($customer->phone) {
-            $sent = $this->notifications->sendSms(
-                $salon,
-                $customer->phone,
-                sprintf(
-                    '%s: Reminder — %s is still pending from your visit on %s.',
-                    $salon->name,
-                    number_format($due, 2),
-                    $appointment->starts_at?->format('d M') ?? 'recently',
-                ),
-                $notificationKey,
-                false,
-            ) || $sent;
-        }
-
-        return $sent;
+        return $this->notifications->sendMail(
+            $salon,
+            $customer->email,
+            new OutstandingPaymentReminderMail($salon, $appointment, $customer, $due),
+            $notificationKey,
+            false,
+        );
     }
 
     private function notifyCustomerReminder(Saloon $salon, Appointment $appointment): bool
     {
         $customer = $appointment->customer;
-        if ($customer === null) {
+        if ($customer === null || ! $customer->email) {
             return false;
         }
 
-        $sent = false;
+        // TODO: WhatsApp — also send appointment reminder to customer phone when integrated.
 
-        if ($customer->email) {
-            $sent = $this->notifications->sendMail(
-                $salon,
-                $customer->email,
-                new AppointmentReminderMail($salon, $appointment, $customer),
-                'appointment_reminder',
-            ) || $sent;
-        }
-
-        if ($customer->phone) {
-            $sent = $this->notifications->sendSms(
-                $salon,
-                $customer->phone,
-                sprintf(
-                    '%s: Reminder — your appointment is on %s.',
-                    $salon->name,
-                    $appointment->starts_at?->format('d M, h:i A') ?? 'soon',
-                ),
-                'appointment_reminder',
-            ) || $sent;
-        }
-
-        return $sent;
+        return $this->notifications->sendMail(
+            $salon,
+            $customer->email,
+            new AppointmentReminderMail($salon, $appointment, $customer),
+            'appointment_reminder',
+        );
     }
 
     private function notifyCustomerConfirmation(Saloon $salon, Appointment $appointment): void
@@ -171,18 +134,7 @@ class AppointmentNotificationService
             );
         }
 
-        if ($customer->phone) {
-            $this->notifications->sendSms(
-                $salon,
-                $customer->phone,
-                sprintf(
-                    '%s: Your appointment is confirmed for %s.',
-                    $salon->name,
-                    $appointment->starts_at?->format('d M, h:i A') ?? 'soon',
-                ),
-                'appointment_confirmation',
-            );
-        }
+        // TODO: WhatsApp — send appointment confirmation to customer phone when integrated.
     }
 
     private function notifyCustomerCancellation(Saloon $salon, Appointment $appointment): void
@@ -201,18 +153,7 @@ class AppointmentNotificationService
             );
         }
 
-        if ($customer->phone) {
-            $this->notifications->sendSms(
-                $salon,
-                $customer->phone,
-                sprintf(
-                    '%s: Your appointment on %s has been cancelled.',
-                    $salon->name,
-                    $appointment->starts_at?->format('d M, h:i A') ?? 'the scheduled time',
-                ),
-                'booking_cancellation',
-            );
-        }
+        // TODO: WhatsApp — send appointment cancellation notice to customer phone when integrated.
     }
 
     private function notifyStaffAssignment(Saloon $salon, Appointment $appointment): void

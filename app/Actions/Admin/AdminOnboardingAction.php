@@ -123,6 +123,9 @@ class AdminOnboardingAction
                 'lastname' => $lastname,
                 'email' => strtolower(trim((string) $userData['email'])),
                 'phone' => trim((string) $userData['phone']),
+                'whatsapp' => filled($userData['whatsapp'] ?? null)
+                    ? trim((string) $userData['whatsapp'])
+                    : null,
                 'saloon_id' => $saloon->id,
                 'branch_id' => $branch->id,
                 'role_id' => $saloonOwnerRole->id,
@@ -243,6 +246,9 @@ class AdminOnboardingAction
                 'lastname' => $lastname,
                 'email' => strtolower(trim((string) $userData['email'])),
                 'phone' => trim((string) $userData['phone']),
+                'whatsapp' => filled($userData['whatsapp'] ?? null)
+                    ? trim((string) $userData['whatsapp'])
+                    : null,
                 'saloon_id' => $saloon->id,
                 'branch_id' => $branch->id,
                 'role_id' => $saloonOwnerRole->id,

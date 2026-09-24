@@ -3,9 +3,11 @@
 namespace App\Services\Appointment;
 
 use App\Models\AppointmentService;
+use App\Models\LeaveRequest;
 use App\Models\User;
 use App\Support\Appointment\AppointmentStatus;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
 class StaffAvailabilityChecker
@@ -82,6 +84,12 @@ class StaffAvailabilityChecker
                 ]);
             }
 
+            if ($staff !== null && $this->isOnApprovedLeave($staff, $startsAt)) {
+                throw ValidationException::withMessages([
+                    "services.{$index}.staff_id" => "{$staff->name} is on approved leave during this time.",
+                ]);
+            }
+
             $conflict = AppointmentService::query()
                 ->where('staff_id', $staffId)
                 ->where('starts_at', '<', $endsAt)
@@ -111,6 +119,21 @@ class StaffAvailabilityChecker
                 "services.{$index}.staff_id" => "Staff is already booked for {$service} with {$customer} ({$window}).",
             ]);
         }
+    }
+
+    /**
+     * Approved leave blocks booking for that calendar day without mutating weekly_schedule.
+     * Guarded by Schema::hasTable so pre-migration environments keep working.
+     */
+    public function isOnApprovedLeave(User $staff, CarbonInterface $startsAt): bool
+    {
+        if (! Schema::hasTable('leave_requests')) {
+            return false;
+        }
+
+        return LeaveRequest::query()
+            ->approvedOverlapping((int) $staff->id, $startsAt->toDateString())
+            ->exists();
     }
 
     /**

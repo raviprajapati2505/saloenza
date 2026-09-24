@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Api\V1\Customer;
 
 use App\Support\Concerns\AuthorizesPermission;
+use App\Support\Phone\PhoneNumber;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -15,7 +16,8 @@ class StoreCustomerRequest extends FormRequest
         $this->merge([
             'name' => $this->filled('name') ? trim((string) $this->input('name')) : null,
             'email' => $this->filled('email') ? strtolower(trim((string) $this->input('email'))) : null,
-            'phone' => $this->filled('phone') ? trim((string) $this->input('phone')) : null,
+            'phone' => $this->filled('phone') ? PhoneNumber::normalize($this->input('phone')) : null,
+            'whatsapp' => $this->filled('whatsapp') ? PhoneNumber::normalize($this->input('whatsapp')) : null,
         ]);
     }
 
@@ -38,7 +40,8 @@ class StoreCustomerRequest extends FormRequest
             ],
             'name' => ['required', 'string', 'max:120'],
             'email' => ['nullable', 'string', 'email', 'max:120'],
-            'phone' => ['nullable', 'string', 'max:30'],
+            'phone' => ['nullable', 'string', 'regex:'.PhoneNumber::E164_REGEX],
+            'whatsapp' => ['nullable', 'string', 'regex:'.PhoneNumber::E164_REGEX],
             'notes' => ['nullable', 'string', 'max:2000'],
             'birthday' => ['nullable', 'date'],
             'anniversary' => ['nullable', 'date'],

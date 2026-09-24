@@ -31,6 +31,7 @@ class PublicBookingController extends Controller
         $validated = $request->validate([
             'date' => ['required', 'date', 'after_or_equal:today'],
             'branch_id' => ['nullable', 'integer', 'exists:saloon_branches,id'],
+            'staff_id' => ['required', 'integer', 'min:1'],
             'service_ids' => ['required', 'array', 'min:1'],
             'service_ids.*' => ['integer', 'min:1'],
         ]);
@@ -40,6 +41,7 @@ class PublicBookingController extends Controller
             $validated['date'],
             array_map('intval', $validated['service_ids']),
             isset($validated['branch_id']) ? (int) $validated['branch_id'] : null,
+            (int) $validated['staff_id'],
         );
 
         return response()->json([
@@ -54,6 +56,7 @@ class PublicBookingController extends Controller
 
         $validated = $request->validate([
             'branch_id' => ['nullable', 'integer', 'exists:saloon_branches,id'],
+            'staff_id' => ['required', 'integer', 'min:1'],
             'service_ids' => ['required', 'array', 'min:1'],
             'service_ids.*' => ['integer', 'min:1'],
             'starts_at' => ['required', 'date'],

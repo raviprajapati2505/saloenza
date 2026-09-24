@@ -90,13 +90,13 @@ class ForgotPasswordApiTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonPath('data.channel', 'sms')
-            ->assertJsonPath('data.destination', $user->phone);
+            ->assertJsonPath('data.channel', 'email')
+            ->assertJsonPath('data.destination', $user->email);
 
         $this->assertDatabaseHas('password_reset_otps', [
             'user_id' => $user->id,
-            'channel' => 'sms',
-            'destination' => $user->phone,
+            'channel' => 'email',
+            'destination' => $user->email,
         ]);
     }
 

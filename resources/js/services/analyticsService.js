@@ -14,3 +14,8 @@ export async function fetchBusinessCloseReport(params = {}) {
   const response = await apiGet('/v1/reports/business-close', params)
   return parseItem(response, 'summary')
 }
+
+export async function fetchBranchBenchmarks(params = {}) {
+  const response = await apiGet('/v1/analytics/benchmarks', params)
+  return parseItem(response, 'comparison')
+}

@@ -14,6 +14,9 @@ import { twMerge } from 'tailwind-merge'
 
 const HIDDEN_SIDEBAR_PATHS = new Set([
   '/analytics',
+  // Temporarily hidden — re-enable when features go live again
+  '/referrals',
+  '/admin/affiliates',
 ])
 
 function cn(...inputs) {

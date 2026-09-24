@@ -228,7 +228,7 @@ export default function WorkspaceSettingsPanel() {
       <div>
         <h3 className="text-base font-bold text-slate-900">Workspace Settings</h3>
         <p className="mt-1 text-xs text-slate-500">
-          Configure platform-wide defaults for salon portals, referral credits, email, SMS, and branding.
+          Configure platform-wide defaults for salon portals, referral credits, and branding.
           Salons inherit these values until they set their own configuration.
         </p>
       </div>

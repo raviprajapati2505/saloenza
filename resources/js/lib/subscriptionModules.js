@@ -69,8 +69,9 @@ export function canMutate(auth, permission) {
 export function isMutationPermission(code) {
   if (!code || typeof code !== 'string') return false
   if (code.endsWith('.view')) return false
-  return /\.(create|update|delete|manage)$/.test(code)
+  return /\.(create|update|delete|manage|approve|punch|send|sell|redeem|adjust)$/.test(code)
     || code === 'assign_permissions.update'
+    || code === 'leave.approve'
 }
 
 /** Raw permission lookup — ignores subscription read-only mutation blocks. */

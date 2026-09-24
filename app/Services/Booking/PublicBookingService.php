@@ -76,6 +76,7 @@ class PublicBookingService
             ->all();
 
         $services = $this->publicBookableServices($salon->id, $branchId);
+        $staff = $this->publicBookableStaff($salon->id, $branchId);
 
         return [
             'salon' => [
@@ -92,6 +93,7 @@ class PublicBookingService
             ],
             'branches' => $branches,
             'services' => $services,
+            'staff' => $staff,
         ];
     }
 
@@ -99,11 +101,22 @@ class PublicBookingService
      * @param  list<int>  $serviceIds
      * @return array<string, mixed>
      */
-    public function availableSlots(SalonBookingLink $link, string $date, array $serviceIds, ?int $branchId = null): array
-    {
+    public function availableSlots(
+        SalonBookingLink $link,
+        string $date,
+        array $serviceIds,
+        ?int $branchId = null,
+        ?int $staffId = null,
+    ): array {
         if ($serviceIds === []) {
             throw ValidationException::withMessages([
                 'service_ids' => 'Select at least one service.',
+            ]);
+        }
+
+        if ($staffId === null) {
+            throw ValidationException::withMessages([
+                'staff_id' => 'Please select a staff member.',
             ]);
         }
 
@@ -111,8 +124,10 @@ class PublicBookingService
         $salon = $link->saloon;
         $day = Carbon::parse($date)->startOfDay();
 
+        $staff = $this->resolveStaffMember($salon->id, $branchId, $staffId);
+
         if ($day->lt(now()->startOfDay())) {
-            return ['date' => $date, 'slots' => []];
+            return ['date' => $date, 'staff_id' => $staffId, 'slots' => []];
         }
 
         [$open, $close] = $this->dayHours($salon, $day);
@@ -129,19 +144,31 @@ class PublicBookingService
                 continue;
             }
 
-            if ($this->assignStaffToServices($salon->id, $branchId, $services, $cursor) !== null) {
-                $slots[] = [
-                    'starts_at' => $cursor->toISOString(),
-                    'ends_at' => $cursor->copy()->addMinutes($totalDuration)->toISOString(),
-                    'label' => $cursor->format('g:i A'),
-                ];
-            }
+            $available = $this->assignStaffToServices(
+                $salon->id,
+                $branchId,
+                $services,
+                $cursor,
+                $staffId,
+            ) !== null;
+
+            $slots[] = [
+                'starts_at' => $cursor->toISOString(),
+                'ends_at' => $cursor->copy()->addMinutes($totalDuration)->toISOString(),
+                'label' => $cursor->format('g:i A'),
+                'available' => $available,
+                'unavailable_reason' => $available
+                    ? null
+                    : 'Selected staff is not available at this time.',
+            ];
 
             $cursor->addMinutes(self::SLOT_INTERVAL_MINUTES);
         }
 
         return [
             'date' => $date,
+            'staff_id' => $staffId,
+            'staff_name' => $staff->name,
             'duration_minutes' => $totalDuration,
             'slots' => $slots,
         ];
@@ -155,14 +182,23 @@ class PublicBookingService
         return DB::transaction(function () use ($link, $payload): Appointment {
             $branchId = $this->resolveBranchId($link, isset($payload['branch_id']) ? (int) $payload['branch_id'] : null);
             $serviceIds = array_values(array_unique(array_map('intval', $payload['service_ids'] ?? [])));
+            $staffId = isset($payload['staff_id']) ? (int) $payload['staff_id'] : null;
             $startsAt = Carbon::parse($payload['starts_at']);
 
+            if ($staffId === null) {
+                throw ValidationException::withMessages([
+                    'staff_id' => 'Please select a staff member.',
+                ]);
+            }
+
+            $this->resolveStaffMember($link->saloon_id, $branchId, $staffId);
+
             $services = $this->normalizeSelectedServices($link->saloon_id, $branchId, $serviceIds);
-            $servicePayload = $this->assignStaffToServices($link->saloon_id, $branchId, $services, $startsAt);
+            $servicePayload = $this->assignStaffToServices($link->saloon_id, $branchId, $services, $startsAt, $staffId);
 
             if ($servicePayload === null) {
                 throw ValidationException::withMessages([
-                    'starts_at' => 'That time slot is no longer available. Please choose another time.',
+                    'starts_at' => 'Selected staff is not available at this time. Please choose another slot.',
                 ]);
             }
 
@@ -241,6 +277,25 @@ class PublicBookingService
         return (int) $defaultBranch->id;
     }
 
+    private function resolveStaffMember(int $saloonId, int $branchId, int $staffId): User
+    {
+        $staff = User::query()
+            ->staff()
+            ->where('saloon_id', $saloonId)
+            ->where('branch_id', $branchId)
+            ->where('id', $staffId)
+            ->where('is_active', true)
+            ->first();
+
+        if ($staff === null) {
+            throw ValidationException::withMessages([
+                'staff_id' => 'Selected staff is not available for this branch.',
+            ]);
+        }
+
+        return $staff;
+    }
+
     /**
      * @param  list<int>  $serviceIds
      * @return list<array{service_id: int, price: float, duration_minutes: int}>
@@ -302,18 +357,46 @@ class PublicBookingService
     }
 
     /**
+     * @return list<array{id: int, name: string, branch_id: int|null}>
+     */
+    private function publicBookableStaff(int $saloonId, ?int $branchId): array
+    {
+        return User::query()
+            ->staff()
+            ->where('saloon_id', $saloonId)
+            ->when($branchId !== null, fn ($query) => $query->where('branch_id', $branchId))
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'branch_id'])
+            ->map(fn (User $member): array => [
+                'id' => (int) $member->id,
+                'name' => (string) $member->name,
+                'branch_id' => $member->branch_id !== null ? (int) $member->branch_id : null,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
      * Assigns each service line to an available staff member (supports multi-staff combos).
+     * When $preferredStaffId is set, all lines must be assigned to that staff member.
      *
      * @param  list<array{service_id: int, price: float, duration_minutes: int}>  $services
      * @return list<array{service_id: int, staff_id: int, price: float, duration_minutes: int, sort_order: int}>|null
      */
-    private function assignStaffToServices(int $saloonId, int $branchId, array $services, Carbon $startsAt): ?array
-    {
+    private function assignStaffToServices(
+        int $saloonId,
+        int $branchId,
+        array $services,
+        Carbon $startsAt,
+        ?int $preferredStaffId = null,
+    ): ?array {
         $staffMembers = User::query()
             ->staff()
             ->where('saloon_id', $saloonId)
             ->where('branch_id', $branchId)
             ->where('is_active', true)
+            ->when($preferredStaffId !== null, fn ($query) => $query->where('id', $preferredStaffId))
             ->orderBy('id')
             ->get(['id', 'weekly_schedule']);
 
@@ -332,6 +415,10 @@ class PublicBookingService
 
             foreach ($staffMembers as $member) {
                 if (! $this->availability->isWithinWeeklySchedule($member, $lineStart, $lineEnd)) {
+                    continue;
+                }
+
+                if ($this->availability->isOnApprovedLeave($member, $lineStart)) {
                     continue;
                 }
 

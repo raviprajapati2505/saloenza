@@ -162,7 +162,8 @@ describe('ownerSchema', () => {
     first_name: 'First Name',
     last_name: 'Last Name',
     email: 'owner@example.com',
-    phone: '0000000000',
+    phone: '+919000000000',
+    whatsapp: '',
     password: '',
     active: true,
   }
@@ -192,19 +193,34 @@ describe('ownerSchema', () => {
     expect(result.success).toBe(false)
   })
 
-  it('fails when phone is not 10 digits', () => {
+  it('fails when phone is invalid', () => {
     const result = ownerSchema.safeParse({ ...validOwner, phone: '12345' })
     expect(result.success).toBe(false)
   })
 
-  it('fails when phone contains non-digits', () => {
-    const result = ownerSchema.safeParse({ ...validOwner, phone: '98765ABCDE' })
+  it('fails when phone contains letters', () => {
+    const result = ownerSchema.safeParse({ ...validOwner, phone: '+9198765ABCDE' })
     expect(result.success).toBe(false)
   })
 
-  it('accepts exactly 10-digit phone', () => {
-    const result = ownerSchema.safeParse({ ...validOwner, phone: '9876543210' })
+  it('accepts E.164 phone with country code', () => {
+    const result = ownerSchema.safeParse({ ...validOwner, phone: '+919876543210' })
     expect(result.success).toBe(true)
+  })
+
+  it('accepts empty optional whatsapp', () => {
+    const result = ownerSchema.safeParse({ ...validOwner, whatsapp: '' })
+    expect(result.success).toBe(true)
+  })
+
+  it('accepts valid optional whatsapp', () => {
+    const result = ownerSchema.safeParse({ ...validOwner, whatsapp: '+919876543211' })
+    expect(result.success).toBe(true)
+  })
+
+  it('fails when whatsapp is invalid', () => {
+    const result = ownerSchema.safeParse({ ...validOwner, whatsapp: '98765' })
+    expect(result.success).toBe(false)
   })
 
   it('allows empty password (optional)', () => {
@@ -303,7 +319,8 @@ describe('onboardingSchema', () => {
       first_name: 'First Name',
       last_name: 'Last Name',
       email: 'owner@example.com',
-      phone: '9876543210',
+      phone: '+919876543210',
+      whatsapp: '',
       password: 'Secure@123',
       active: true,
     },

@@ -248,8 +248,7 @@ export default function SalonConfigurationPanel({ canUpdate = true }) {
       <div>
         <h3 className="text-base font-bold text-slate-900">Salon Configuration</h3>
         <p className="mt-1 text-xs text-slate-500">
-          Configure branding, email, SMS, notifications, and regional settings for your portal.
-          Unconfigured items automatically use platform defaults.
+          Configure branding, notifications, and regional settings for your portal.
         </p>
       </div>
 

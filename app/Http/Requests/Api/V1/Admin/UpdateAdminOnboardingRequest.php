@@ -7,6 +7,7 @@ use App\Models\SaloonBranch;
 use App\Models\User;
 use App\Support\Concerns\AuthorizesPermission;
 use App\Support\PasswordRules;
+use App\Support\Phone\PhoneNumber;
 use App\Support\Role\RoleCodes;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -48,8 +49,17 @@ class UpdateAdminOnboardingRequest extends FormRequest
 
             if ($ownerId !== null) {
                 $user['id'] = $ownerId;
-                $this->merge(['user' => $user]);
             }
+        }
+
+        if (is_array($user)) {
+            if (array_key_exists('phone', $user)) {
+                $user['phone'] = PhoneNumber::normalize($user['phone'] ?? null);
+            }
+            if (array_key_exists('whatsapp', $user)) {
+                $user['whatsapp'] = PhoneNumber::normalize($user['whatsapp'] ?? null);
+            }
+            $this->merge(['user' => $user]);
         }
 
         $branch = $this->input('branch');
@@ -115,8 +125,13 @@ class UpdateAdminOnboardingRequest extends FormRequest
             'user.phone' => [
                 'required',
                 'string',
-                'regex:/^\+?[0-9\s\-()]{7,20}$/',
+                'regex:'.PhoneNumber::E164_REGEX,
                 Rule::unique('users', 'phone')->ignore($userId),
+            ],
+            'user.whatsapp' => [
+                'nullable',
+                'string',
+                'regex:'.PhoneNumber::E164_REGEX,
             ],
             'user.password' => ['nullable', 'confirmed', PasswordRules::defaults()],
             'user.is_active' => ['required', 'boolean'],

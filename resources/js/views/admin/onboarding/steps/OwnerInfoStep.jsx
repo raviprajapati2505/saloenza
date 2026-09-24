@@ -1,8 +1,9 @@
 import React from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
-import { Mail, Phone, User } from 'lucide-react'
+import { Mail, User } from 'lucide-react'
 import BaseInput from '../../../../components/ui/BaseInput.jsx'
 import FormToggle from '../../../../components/ui/FormToggle.jsx'
+import PhoneWithCountryInput from '../../../../components/inputs/PhoneWithCountryInput.jsx'
 
 export default function OwnerInfoStep() {
   const {
@@ -26,7 +27,6 @@ export default function OwnerInfoStep() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        {/* First Name */}
         <div>
           <BaseInput
             id="owner-first_name"
@@ -39,7 +39,6 @@ export default function OwnerInfoStep() {
           />
         </div>
 
-        {/* Last Name */}
         <div>
           <BaseInput
             id="owner-last_name"
@@ -52,7 +51,6 @@ export default function OwnerInfoStep() {
           />
         </div>
 
-        {/* Email */}
         <div className="sm:col-span-2">
           <BaseInput
             id="owner-email"
@@ -66,23 +64,42 @@ export default function OwnerInfoStep() {
           />
         </div>
 
-        {/* Phone */}
         <div>
-          <BaseInput
-            id="owner-phone"
-            label="Phone"
-            required
-            type="tel"
-            maxLength={10}
-            placeholder="10-digit mobile number"
-            prefix={Phone}
-            error={ownerErrors.phone?.message}
-            {...register('owner.phone')}
+          <Controller
+            name="owner.phone"
+            control={control}
+            render={({ field }) => (
+              <PhoneWithCountryInput
+                id="owner-phone"
+                label="Phone"
+                required
+                value={field.value || ''}
+                onChange={field.onChange}
+                error={ownerErrors.phone?.message}
+              />
+            )}
           />
         </div>
 
-        {/* Password (optional) */}
         <div>
+          <Controller
+            name="owner.whatsapp"
+            control={control}
+            render={({ field }) => (
+              <PhoneWithCountryInput
+                id="owner-whatsapp"
+                label="WhatsApp"
+                optional
+                value={field.value || ''}
+                onChange={field.onChange}
+                error={ownerErrors.whatsapp?.message}
+                placeholder="WhatsApp number"
+              />
+            )}
+          />
+        </div>
+
+        <div className="sm:col-span-2">
           <BaseInput
             id="owner-password"
             label="Password"
@@ -94,7 +111,6 @@ export default function OwnerInfoStep() {
           />
         </div>
 
-        {/* Active Toggle */}
         <div className="sm:col-span-2 flex items-center gap-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
           <div className="flex-1">
             <p className="text-sm font-medium text-slate-700">Owner Account Active</p>

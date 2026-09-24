@@ -46,13 +46,13 @@ export default function ForgotPasswordView() {
       if (USE_MOCK_AUTH) {
         await new Promise((resolve) => setTimeout(resolve, 400))
         setOtpCode('0101')
-        setDeliveryChannel(login.includes('@') ? 'email' : 'sms')
+        setDeliveryChannel('email')
       } else {
         const response = await api.post('/v1/public/forgot-password/request-otp', {
           login: login.trim(),
         })
         setOtpCode(response?.data?.data?.otp_code || '')
-        setDeliveryChannel(response?.data?.data?.channel || '')
+        setDeliveryChannel(response?.data?.data?.channel || 'email')
       }
       setStep('verify')
     } catch (error) {

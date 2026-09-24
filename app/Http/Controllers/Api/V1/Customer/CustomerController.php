@@ -44,6 +44,7 @@ class CustomerController extends Controller
 
         if ($saloonId !== null) {
             $query->forSaloon($saloonId);
+            $query->with(['valueStats' => fn ($inner) => $inner->where('saloon_id', $saloonId)]);
         }
 
         if (array_key_exists('is_active', $validated)) {
@@ -101,6 +102,7 @@ class CustomerController extends Controller
             'name' => trim((string) $request->validated('name')),
             'email' => $request->validated('email'),
             'phone' => $request->validated('phone'),
+            'whatsapp' => $request->validated('whatsapp'),
             'notes' => $request->validated('notes'),
             'birthday' => $request->validated('birthday'),
             'anniversary' => $request->validated('anniversary'),
@@ -138,6 +140,11 @@ class CustomerController extends Controller
 
         $customer->loadCount('appointments');
 
+        $saloonId = TenantScope::resolveSaloonFilter($user, null);
+        if ($saloonId !== null) {
+            $customer->load(['valueStats' => fn ($inner) => $inner->where('saloon_id', $saloonId)]);
+        }
+
         return response()->json([
             'message' => 'Customer fetched successfully.',
             'data' => [
@@ -167,6 +174,9 @@ class CustomerController extends Controller
         if (CustomerContactAccess::canView($user, $customer)) {
             $updates['email'] = $request->validated('email');
             $updates['phone'] = $request->validated('phone');
+            if ($request->exists('whatsapp')) {
+                $updates['whatsapp'] = $request->validated('whatsapp');
+            }
         }
 
         $customer->update($updates);

@@ -11,7 +11,6 @@ class TenantNotificationDispatcher
     public function __construct(
         private readonly TenantConfig $tenantConfig,
         private readonly TenantMailDeliveryService $mailDeliveryService,
-        private readonly TenantSmsDeliveryService $smsDeliveryService,
     ) {
     }
 
@@ -35,6 +34,11 @@ class TenantNotificationDispatcher
         return true;
     }
 
+    /**
+     * SMS channel removed.
+     *
+     * TODO: WhatsApp — route phone notifications through WhatsApp when integration is ready.
+     */
     public function sendSms(
         Saloon $salon,
         string $phone,
@@ -42,16 +46,9 @@ class TenantNotificationDispatcher
         ?string $notificationKey = null,
         bool $defaultEnabled = true,
     ): bool {
-        if ($notificationKey !== null && ! $this->tenantConfig->notificationEnabled($salon, $notificationKey, $defaultEnabled)) {
-            return false;
-        }
+        // TODO: WhatsApp integration — previously dispatched SMS via TenantSmsDeliveryService.
+        unset($salon, $phone, $message, $notificationKey, $defaultEnabled);
 
-        if ($phone === '') {
-            return false;
-        }
-
-        $this->smsDeliveryService->send($salon, $phone, $message);
-
-        return true;
+        return false;
     }
 }

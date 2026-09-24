@@ -38,12 +38,14 @@ class TenantConfig
 
     public function shouldUseCustomEmail(Saloon $salon): bool
     {
-        return (bool) $this->get($salon, 'email', 'use_custom', false);
+        // Email is always delivered via .env / Brevo — salon SMTP overrides are disabled.
+        return false;
     }
 
     public function shouldUseCustomSms(Saloon $salon): bool
     {
-        return (bool) $this->get($salon, 'sms', 'use_custom', false);
+        // SMS delivery removed — future WhatsApp integration will replace it.
+        return false;
     }
 
     public function notificationEnabled(Saloon $salon, string $key, bool $default = true): bool

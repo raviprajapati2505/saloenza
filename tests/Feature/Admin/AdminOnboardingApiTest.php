@@ -219,7 +219,7 @@ class AdminOnboardingApiTest extends TestCase
             'email' => 'owner-show@test.com',
             'firstname' => 'Show',
             'lastname' => 'Owner',
-            'phone' => '9876543210',
+            'phone' => '+919876543210',
         ]);
         $saloon = $owner->saloon;
         $branch = $saloon->branches()->create([
@@ -249,7 +249,7 @@ class AdminOnboardingApiTest extends TestCase
             'email' => 'owner-update@test.com',
             'firstname' => 'Old',
             'lastname' => 'Owner',
-            'phone' => '9876543210',
+            'phone' => '+919876543210',
         ]);
         $saloon = $owner->saloon;
         $branch = $saloon->branches()->create([
@@ -288,7 +288,7 @@ class AdminOnboardingApiTest extends TestCase
                 'firstname' => 'New',
                 'lastname' => 'Owner',
                 'email' => 'new-owner@test.com',
-                'phone' => '9123456789',
+                'phone' => '+919123456789',
                 'is_active' => true,
             ],
             'service_products' => [],
@@ -312,7 +312,7 @@ class AdminOnboardingApiTest extends TestCase
             'email' => 'same-owner@test.com',
             'firstname' => 'Same',
             'lastname' => 'Owner',
-            'phone' => '9876543210',
+            'phone' => '+919876543210',
         ]);
         $saloon = $owner->saloon;
         $branch = $saloon->branches()->create([
@@ -348,7 +348,7 @@ class AdminOnboardingApiTest extends TestCase
                 'firstname' => 'Same',
                 'lastname' => 'Owner',
                 'email' => 'same-owner@test.com',
-                'phone' => '9876543210',
+                'phone' => '+919876543210',
                 'is_active' => true,
             ],
             'service_products' => [],

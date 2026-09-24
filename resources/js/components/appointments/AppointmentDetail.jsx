@@ -6,15 +6,38 @@ import { X, Calendar, Clock, User, CheckCircle, Play, Ban, Phone, Package, Edit2
 import BaseBadge from '../ui/BaseBadge.jsx'
 import BaseButton from '../ui/BaseButton.jsx'
 import { useAppointmentStore } from '../../stores/appointmentStore'
-import { apiPut, apiDelete } from '../../lib/apiHelpers'
+import { appointmentToCalendarEvent, apiPut, apiDelete } from '../../lib/apiHelpers.js'
 import { useAuthStore } from '../../stores/auth'
 import { useTenantFormatter } from '../../hooks/useTenantFormatter.js'
 import { downloadAppointmentReceipt, captureAppointmentPayment, refundAppointmentPayment, remindAppointmentPayment } from '../../services/appointmentService.js'
+import {
+  markDepositPaid,
+  waiveDeposit,
+  refundDeposit,
+  applyNoShowFee,
+} from '../../services/noShowPolicyService.js'
 import PaymentCaptureModal from './PaymentCaptureModal.jsx'
 import { PAYMENT_STATUS_LABELS, PAYMENT_STATUS_VARIANT, paymentMethodLabel, balanceDue } from '../../lib/appointmentPayments.js'
 import { customerHasContactOnFile } from '../../lib/customerContact.js'
 import { bookingSourceLabel, canStartService, mapAppointmentServicesForUpdate } from '../../lib/appointmentStatus.js'
 import { pushToast } from '../../stores/toast.js'
+import { TENANT_PERMISSIONS } from '../../lib/tenantPermissions.js'
+
+const DEPOSIT_LABELS = {
+  not_required: 'Not required',
+  pending: 'Deposit due',
+  paid: 'Deposit paid',
+  waived: 'Deposit waived',
+  refunded: 'Deposit refunded',
+}
+
+const FEE_LABELS = {
+  'n/a': 'No fee',
+  pending: 'Fee pending',
+  charged: 'Fee charged',
+  waived: 'Fee waived',
+  failed: 'Fee failed',
+}
 
 export default function AppointmentDetail() {
   const queryClient = useQueryClient()
@@ -23,6 +46,9 @@ export default function AppointmentDetail() {
   const canUpdate = auth.can('appointments.update')
   const canDelete = auth.can('appointments.delete')
   const canViewCustomers = auth.can('customers.view')
+  const canChargeDeposit = auth.can(TENANT_PERMISSIONS.PAYMENTS_CHARGE)
+  const canWaiveDeposit = auth.can(TENANT_PERMISSIONS.PAYMENTS_WAIVE)
+  const canRefundDeposit = auth.can(TENANT_PERMISSIONS.PAYMENTS_REFUND)
 
   const event = useAppointmentStore(state => state.selectedEvent)
   const setSelectedEvent = useAppointmentStore(state => state.setSelectedEvent)
@@ -35,6 +61,7 @@ export default function AppointmentDetail() {
   const [paymentSaving, setPaymentSaving] = React.useState(false)
   const [confirmRefund, setConfirmRefund] = React.useState(false)
   const [remindingPayment, setRemindingPayment] = React.useState(false)
+  const [depositBusy, setDepositBusy] = React.useState(false)
 
   React.useEffect(() => {
     if (event) setLocalEvent(event)
@@ -70,7 +97,7 @@ export default function AppointmentDetail() {
         staff_id: line.staff_id ?? null,
       }))
 
-      await apiPut(`/v1/appointments/${id}`, {
+      const response = await apiPut(`/v1/appointments/${id}`, {
         branch_id: raw.branch_id ?? null,
         customer_id: raw.customer_id ?? null,
         type: raw.type || 'appointment',
@@ -81,13 +108,71 @@ export default function AppointmentDetail() {
         services,
         products,
       })
-      return { id, status }
+      return { id, status, appointment: response?.data?.data?.appointment ?? response?.data?.appointment ?? null }
     },
-    onSuccess: () => {
+    onSuccess: ({ status, appointment }) => {
       invalidateVisitQueries()
+      if (status === 'no-show' && appointment) {
+        const mapped = appointmentToCalendarEvent(appointment)
+        setSelectedEvent(mapped)
+        setLocalEvent(mapped)
+        const fee = Number(appointment.no_show_fee_amount || 0)
+        const feeStatus = appointment.no_show_fee_status || 'n/a'
+        if (fee > 0 && feeStatus === 'pending') {
+          pushToast(`Marked no-show. Fee pending: ${fmt.money(fee)}.`, 'warning')
+          return
+        }
+        pushToast('Marked as no-show.', 'success')
+        return
+      }
       setSelectedEvent(null)
     },
+    onError: (error) => {
+      pushToast(error?.response?.data?.message || 'Unable to update appointment.', 'error')
+    },
   })
+
+  const applyAppointmentUpdate = (appointment) => {
+    if (!appointment) return
+    const mapped = appointmentToCalendarEvent(appointment)
+    setSelectedEvent(mapped)
+    setLocalEvent(mapped)
+    invalidateVisitQueries()
+  }
+
+  const runDepositAction = async (action) => {
+    if (!activeEvent?.id) return
+    setDepositBusy(true)
+    try {
+      let appointment = null
+      if (action === 'paid') appointment = await markDepositPaid(activeEvent.id)
+      if (action === 'waive') appointment = await waiveDeposit(activeEvent.id)
+      if (action === 'refund') appointment = await refundDeposit(activeEvent.id)
+      applyAppointmentUpdate(appointment)
+      pushToast(
+        action === 'paid' ? 'Deposit marked as paid.' : action === 'waive' ? 'Deposit waived.' : 'Deposit refunded.',
+        'success',
+      )
+    } catch (error) {
+      pushToast(error?.response?.data?.message || 'Unable to update deposit.', 'error')
+    } finally {
+      setDepositBusy(false)
+    }
+  }
+
+  const runNoShowFeeAction = async (action) => {
+    if (!activeEvent?.id) return
+    setDepositBusy(true)
+    try {
+      const appointment = await applyNoShowFee(activeEvent.id, { action })
+      applyAppointmentUpdate(appointment)
+      pushToast(action === 'charged' ? 'No-show fee charged.' : 'No-show fee waived.', 'success')
+    } catch (error) {
+      pushToast(error?.response?.data?.message || 'Unable to update no-show fee.', 'error')
+    } finally {
+      setDepositBusy(false)
+    }
+  }
 
   const deleteMutation = useMutation({
     mutationFn: async (id) => apiDelete(`/v1/appointments/${id}`),
@@ -117,6 +202,12 @@ export default function AppointmentDetail() {
   const sourceLabel = bookingSourceLabel(raw.booking_source || props.bookingSource)
   const amountPaid = props.amountPaid ?? raw.amount_paid ?? 0
   const dueBalance = props.balanceDue ?? balanceDue(raw)
+  const depositStatus = raw.deposit_status || 'not_required'
+  const depositAmount = Number(raw.deposit_required_amount || 0)
+  const feeStatus = raw.no_show_fee_status || 'n/a'
+  const feeAmount = Number(raw.no_show_fee_amount || 0)
+  const showDepositCard = depositStatus !== 'not_required' && depositAmount > 0
+  const showFeeCard = props.status === 'no-show' && feeStatus !== 'n/a' && feeAmount > 0
 
   const statusColors = {
     scheduled: 'info',
@@ -181,7 +272,7 @@ export default function AppointmentDetail() {
     }
   }
 
-  const isPending = updateStatusMutation.isPending || deleteMutation.isPending
+  const isPending = updateStatusMutation.isPending || deleteMutation.isPending || depositBusy
 
   const renderDetail = () => (
     <>
@@ -360,6 +451,69 @@ export default function AppointmentDetail() {
             )}
           </div>
         </div>
+
+        {showDepositCard ? (
+          <div className="rounded-xl border border-amber-100 bg-amber-50/70 p-4 text-sm">
+            <div className="flex items-center justify-between gap-3">
+              <span className="font-semibold text-amber-900">Deposit</span>
+              <BaseBadge variant={depositStatus === 'paid' ? 'success' : depositStatus === 'pending' ? 'warning' : 'default'}>
+                {DEPOSIT_LABELS[depositStatus] || depositStatus}
+              </BaseBadge>
+            </div>
+            <div className="mt-2 flex items-center justify-between gap-3">
+              <span className="text-amber-800/80">Amount</span>
+              <span className="font-bold tabular-nums text-amber-950">{fmt.money(depositAmount)}</span>
+            </div>
+            {(canChargeDeposit || canWaiveDeposit || canRefundDeposit) ? (
+              <div className="mt-3 grid grid-cols-1 gap-2">
+                {canChargeDeposit && depositStatus === 'pending' ? (
+                  <BaseButton size="sm" variant="primary" loading={depositBusy} disabled={isPending} onClick={() => void runDepositAction('paid')}>
+                    Mark deposit paid
+                  </BaseButton>
+                ) : null}
+                {canWaiveDeposit && (depositStatus === 'pending' || depositStatus === 'paid') ? (
+                  <BaseButton size="sm" variant="secondary" loading={depositBusy} disabled={isPending} onClick={() => void runDepositAction('waive')}>
+                    Waive deposit
+                  </BaseButton>
+                ) : null}
+                {canRefundDeposit && depositStatus === 'paid' ? (
+                  <BaseButton size="sm" variant="ghost" className="text-rose-700 bg-rose-50 hover:bg-rose-100" loading={depositBusy} disabled={isPending} onClick={() => void runDepositAction('refund')}>
+                    Refund deposit
+                  </BaseButton>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+
+        {showFeeCard ? (
+          <div className="rounded-xl border border-rose-100 bg-rose-50/70 p-4 text-sm">
+            <div className="flex items-center justify-between gap-3">
+              <span className="font-semibold text-rose-900">No-show fee</span>
+              <BaseBadge variant={feeStatus === 'charged' ? 'success' : feeStatus === 'pending' ? 'warning' : 'default'}>
+                {FEE_LABELS[feeStatus] || feeStatus}
+              </BaseBadge>
+            </div>
+            <div className="mt-2 flex items-center justify-between gap-3">
+              <span className="text-rose-800/80">Amount</span>
+              <span className="font-bold tabular-nums text-rose-950">{fmt.money(feeAmount)}</span>
+            </div>
+            {feeStatus === 'pending' && (canChargeDeposit || canWaiveDeposit) ? (
+              <div className="mt-3 grid grid-cols-1 gap-2">
+                {canChargeDeposit ? (
+                  <BaseButton size="sm" variant="primary" loading={depositBusy} disabled={isPending} onClick={() => void runNoShowFeeAction('charged')}>
+                    Charge no-show fee
+                  </BaseButton>
+                ) : null}
+                {canWaiveDeposit ? (
+                  <BaseButton size="sm" variant="secondary" loading={depositBusy} disabled={isPending} onClick={() => void runNoShowFeeAction('waived')}>
+                    Waive fee
+                  </BaseButton>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
 
         {props.notes && (
           <div>

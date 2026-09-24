@@ -5,6 +5,7 @@ namespace App\Http\Requests\Api\V1\Staff;
 use App\Models\User;
 use App\Support\Concerns\AuthorizesPermission;
 use App\Support\PasswordRules;
+use App\Support\Phone\PhoneNumber;
 use App\Support\Staff\StaffAccess;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -19,11 +20,18 @@ class UpdateStaffRequest extends FormRequest
             'firstname' => $this->filled('firstname') ? trim((string) $this->input('firstname')) : null,
             'lastname' => $this->filled('lastname') ? trim((string) $this->input('lastname')) : null,
             'email' => $this->filled('email') ? strtolower(trim((string) $this->input('email'))) : null,
-            'phone' => $this->filled('phone') ? trim((string) $this->input('phone')) : null,
+            'phone' => $this->filled('phone') ? PhoneNumber::normalize($this->input('phone')) : null,
+            'whatsapp' => $this->exists('whatsapp')
+                ? ($this->filled('whatsapp') ? PhoneNumber::normalize($this->input('whatsapp')) : null)
+                : null,
         ];
 
         if ($this->exists('notes')) {
             $payload['notes'] = $this->filled('notes') ? trim((string) $this->input('notes')) : null;
+        }
+
+        if (! $this->exists('whatsapp')) {
+            unset($payload['whatsapp']);
         }
 
         $this->merge($payload);
@@ -63,8 +71,13 @@ class UpdateStaffRequest extends FormRequest
             'phone' => [
                 'required',
                 'string',
-                'regex:/^\+?[0-9\s\-()]{7,20}$/',
+                'regex:'.PhoneNumber::E164_REGEX,
                 Rule::unique('users', 'phone')->ignore($staff->id),
+            ],
+            'whatsapp' => [
+                'nullable',
+                'string',
+                'regex:'.PhoneNumber::E164_REGEX,
             ],
             'password' => ['nullable', 'confirmed', PasswordRules::defaults()],
             'is_active' => ['required', 'boolean'],

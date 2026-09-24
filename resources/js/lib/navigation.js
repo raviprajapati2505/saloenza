@@ -22,8 +22,20 @@ import {
   Calendar,
   MoreHorizontal,
   CalendarClock,
+  Upload,
   ShoppingBag,
   ListOrdered,
+  Sparkles,
+  HeartHandshake,
+  GitCompareArrows,
+  Megaphone,
+  Boxes,
+  TicketPercent,
+  ListPlus,
+  ShieldAlert,
+  Percent,
+  Star,
+  Clock,
 } from 'lucide-react'
 import { PLATFORM_PERMISSIONS } from './platformPermissions.js'
 import { isPlatformPermissionCode } from './tenantPermissions.js'
@@ -43,6 +55,8 @@ export const NAV_GROUPS = [
     items: [
       { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard, permission: null },
       { label: 'Reports', to: '/reports', icon: BarChart3, permission: 'analytics.view', tenantOnly: true },
+      { label: 'Insights', to: '/insights', icon: Sparkles, permission: 'analytics.insights.view', tenantOnly: true },
+      { label: 'Benchmarks', to: '/benchmarks', icon: GitCompareArrows, permission: ['analytics.benchmark.view', 'analytics.view'], tenantOnly: true },
     ],
   },
   {
@@ -69,18 +83,30 @@ export const NAV_GROUPS = [
         icon: KeyRound,
         permission: 'assign_permissions.view',
       },
+      { label: 'Attendance', to: '/attendance', icon: Clock, permission: ['attendance.view', 'attendance.punch'], tenantOnly: true },
+      { label: 'Payroll', to: '/payroll', icon: Wallet, permission: 'payroll.view', tenantOnly: true },
     ],
   },
   {
     title: 'Operations',
     items: [
       { label: 'Appointments', to: '/appointments', icon: CalendarDays, permission: 'appointments.view' },
+      { label: 'Import appointments', to: '/appointment-imports', icon: Upload, appointmentImport: true },
       { label: 'Live queue', to: '/queue', icon: ListOrdered, permission: 'queue.view', tenantOnly: true },
+      { label: 'Waitlist', to: '/waitlist', icon: ListPlus, permission: 'waitlist.view', tenantOnly: true },
       { label: 'Booking links', to: '/booking-links', icon: Link2, permission: 'booking_links.view', tenantOnly: true },
       { label: 'My earnings', to: '/staff/earnings', icon: Wallet, permission: 'staff.earnings.view', tenantOnly: true },
+      { label: 'Commissions', to: '/commissions', icon: HandCoins, permission: 'commissions.view', tenantOnly: true },
       { label: 'POS', to: '/pos', icon: ShoppingBag, permission: 'appointments.view', tenantOnly: true },
       { label: 'Customers', to: '/customers', icon: UsersRound, permission: 'customers.view' },
+      { label: 'Retention', to: '/retention', icon: HeartHandshake, permission: 'crm.retention.view', tenantOnly: true },
+      { label: 'Packages', to: '/packages', icon: Boxes, permission: 'packages.view', tenantOnly: true },
+      { label: 'Gift cards', to: '/gift-cards', icon: TicketPercent, permission: 'giftcards.view', tenantOnly: true },
       { label: 'Inventory', to: '/inventory', icon: PackageOpen, permission: 'inventory.view' },
+      { label: 'Marketing', to: '/marketing', icon: Megaphone, permission: 'marketing.view', tenantOnly: true },
+      { label: 'Reviews', to: '/reviews', icon: Star, permission: 'reviews.view', tenantOnly: true },
+      { label: 'No-show policy', to: '/no-show-policy', icon: ShieldAlert, permission: 'payments.policy.manage', tenantOnly: true },
+      { label: 'Pricing rules', to: '/pricing-rules', icon: Percent, permission: 'pricing_rules.view', tenantOnly: true },
     ],
   },
   {
@@ -212,6 +238,19 @@ export const EXTRA_ROUTE_PERMISSIONS = {
   '/staff/earnings': 'staff.earnings.view',
   '/queue': 'queue.view',
   '/booking-links': 'booking_links.view',
+  '/commissions': 'commissions.view',
+  '/insights': 'analytics.insights.view',
+  '/benchmarks': 'analytics.benchmark.view',
+  '/retention': 'crm.retention.view',
+  '/marketing': 'marketing.view',
+  '/packages': 'packages.view',
+  '/gift-cards': 'giftcards.view',
+  '/payroll': 'payroll.view',
+  '/reviews': 'reviews.view',
+  '/attendance': 'attendance.view',
+  '/waitlist': 'waitlist.view',
+  '/no-show-policy': 'payments.policy.manage',
+  '/pricing-rules': 'pricing_rules.view',
   '/admin/onboarding/new': PLATFORM_PERMISSIONS.ONBOARDING,
   '/admin/onboarding/:id/edit': PLATFORM_PERMISSIONS.ONBOARDING,
   '/admin/subscription-plans': PLATFORM_PERMISSIONS.SUBSCRIPTIONS,
@@ -247,6 +286,15 @@ export function canAccessNavItem(auth, item) {
 
   if (item?.superAdminOnly) {
     return Boolean(auth?.grantsAllPermissions || auth?.isSystemAdmin)
+  }
+
+  if (item?.appointmentImport) {
+    return Boolean(
+      auth?.grantsAllPermissions
+      || auth?.isSystemAdmin
+      || auth?.isFranchiseOwner
+      || auth?.role?.code === 'salon.franchise_owner',
+    )
   }
 
   if (auth?.grantsAllPermissions) return true

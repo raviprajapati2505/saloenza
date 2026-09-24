@@ -24,6 +24,8 @@ final class SubscriptionModules
 
     public const QUEUE = 'queue';
 
+    public const MARKETING = 'marketing';
+
     /**
      * @return list<string>
      */
@@ -40,6 +42,7 @@ final class SubscriptionModules
             self::ROLES,
             self::SETTINGS,
             self::QUEUE,
+            self::MARKETING,
         ];
     }
 
@@ -59,6 +62,7 @@ final class SubscriptionModules
             self::ROLES => 'Roles & Permissions',
             self::SETTINGS => 'Settings',
             self::QUEUE => 'Live Queue',
+            self::MARKETING => 'Marketing',
         ];
     }
 
@@ -70,13 +74,30 @@ final class SubscriptionModules
     public static function permissionMap(): array
     {
         return [
-            self::APPOINTMENTS => ['appointments.view', 'appointments.create', 'appointments.update', 'appointments.delete', 'booking_links.view', 'booking_links.manage'],
+            self::APPOINTMENTS => [
+                'appointments.view', 'appointments.create', 'appointments.update', 'appointments.delete',
+                'booking_links.view', 'booking_links.manage',
+                'waitlist.view', 'waitlist.manage',
+                'pricing_rules.view', 'pricing_rules.manage',
+                'payments.policy.manage', 'payments.charge', 'payments.refund', 'payments.waive',
+            ],
             self::QUEUE => ['queue.view', 'queue.view_all'],
-            self::CUSTOMERS => ['customers.view', 'customers.manage', 'customers.contacts.view'],
-            self::STAFF => ['staff.view', 'staff.create', 'staff.update', 'staff.delete', 'staff.earnings.view'],
+            self::CUSTOMERS => [
+                'customers.view', 'customers.manage', 'customers.contacts.view',
+                'crm.retention.view', 'crm.retention.manage',
+                'packages.view', 'packages.manage', 'packages.sell', 'packages.redeem',
+                'giftcards.view', 'giftcards.manage', 'giftcards.sell', 'giftcards.redeem', 'giftcards.adjust',
+            ],
+            self::STAFF => [
+                'staff.view', 'staff.create', 'staff.update', 'staff.delete', 'staff.earnings.view',
+                'commissions.view', 'commissions.manage', 'commissions.approve',
+                'payroll.view', 'payroll.manage', 'payroll.approve',
+                'attendance.view', 'attendance.manage', 'attendance.punch', 'leave.approve',
+            ],
             self::BILLING => ['settings.view', 'settings.update'],
-            self::ANALYTICS => ['analytics.view', 'expenses.view', 'expenses.manage'],
+            self::ANALYTICS => ['analytics.view', 'analytics.benchmark.view', 'analytics.insights.view', 'expenses.view', 'expenses.manage'],
             self::INVENTORY => ['inventory.view', 'inventory.manage'],
+            self::MARKETING => ['marketing.view', 'marketing.manage', 'marketing.send', 'reviews.view', 'reviews.manage'],
             self::CATALOG => [
                 'categories.view', 'categories.create', 'categories.update', 'categories.delete',
                 'services.view', 'services.create', 'services.update', 'services.delete',
@@ -117,14 +138,27 @@ final class SubscriptionModules
         return [
             '/analytics' => self::ANALYTICS,
             '/reports' => self::ANALYTICS,
+            '/insights' => self::ANALYTICS,
+            '/retention' => self::CUSTOMERS,
             '/appointments' => self::APPOINTMENTS,
             '/pos' => self::APPOINTMENTS,
             '/queue' => self::QUEUE,
             '/staff/earnings' => self::STAFF,
+            '/commissions' => self::STAFF,
+            '/payroll' => self::STAFF,
+            '/attendance' => self::STAFF,
+            '/reviews' => self::MARKETING,
             '/booking-links' => self::APPOINTMENTS,
+            '/waitlist' => self::APPOINTMENTS,
+            '/no-show-policy' => self::APPOINTMENTS,
+            '/pricing-rules' => self::APPOINTMENTS,
             '/customers' => self::CUSTOMERS,
+            '/packages' => self::CUSTOMERS,
+            '/gift-cards' => self::CUSTOMERS,
             '/staff' => self::STAFF,
             '/inventory' => self::INVENTORY,
+            '/benchmarks' => self::ANALYTICS,
+            '/marketing' => self::MARKETING,
             '/billing' => self::BILLING,
             '/categories' => self::CATALOG,
             '/catalog' => self::CATALOG,

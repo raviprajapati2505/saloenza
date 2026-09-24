@@ -17,9 +17,12 @@ use App\Services\Notifications\OtpNotificationService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use App\Models\SalonServiceProduct;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Symfony\Component\Mailer\Bridge\Brevo\Transport\BrevoTransportFactory;
+use Symfony\Component\Mailer\Transport\Dsn;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -56,6 +59,16 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Route::model('catalog', SalonServiceProduct::class);
+
+        Mail::extend('brevo', function () {
+            return (new BrevoTransportFactory)->create(
+                new Dsn(
+                    'brevo+api',
+                    'default',
+                    config('services.brevo.key'),
+                )
+            );
+        });
 
         RateLimiter::for('auth', function (Request $request): Limit {
             return Limit::perMinute(10)->by($request->ip());

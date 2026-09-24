@@ -4,6 +4,7 @@ namespace App\Services\Staff;
 
 use App\Models\Appointment;
 use App\Models\User;
+use App\Services\Commission\CommissionRuleResolver;
 use App\Support\Customer\CustomerContactPayload;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -11,6 +12,10 @@ use Illuminate\Database\Eloquent\Builder;
 class StaffEarningsService
 {
     private const EARNINGS_STATUSES = ['completed', 'in-progress'];
+
+    public function __construct(
+        private readonly CommissionRuleResolver $commissionResolver,
+    ) {}
 
     /**
      * @return array<string, mixed>
@@ -22,7 +27,14 @@ class StaffEarningsService
         $viewer ??= $staff;
 
         $appointments = $this->baseQuery($staff, $from, $to)
-            ->with(['customer', 'branch', 'service', 'services.service', 'services.staff', 'products.product'])
+            ->with([
+                'customer',
+                'branch',
+                'service.category',
+                'services.service.category',
+                'services.staff',
+                'products.product.category',
+            ])
             ->orderBy('starts_at')
             ->get();
 
@@ -63,7 +75,20 @@ class StaffEarningsService
 
             foreach ($myLines as $line) {
                 $revenue = round((float) $line['revenue'], 2);
-                $commission = round($revenue * ($commissionRate / 100), 2);
+                $resolved = $this->commissionResolver->resolve($staff, [
+                    'applies_to' => $line['kind'] === 'product' ? 'product' : 'service',
+                    'service_id' => $line['service_id'] ?? null,
+                    'product_id' => $line['product_id'] ?? null,
+                    'category_id' => $line['category_id'] ?? null,
+                    'revenue' => $revenue,
+                    'duration_minutes' => $line['duration_minutes'] ?? null,
+                    'discount_allocated' => $line['discount_allocated'] ?? 0,
+                    'branch_id' => $appointment->branch_id,
+                    'earned_on' => $appointment->starts_at,
+                ]);
+
+                $commission = round((float) $resolved['commission'], 2);
+                $lineRate = (float) $resolved['rate'];
                 $minutes = (int) ($line['duration_minutes'] ?? 0);
                 $collectedShare = round(($revenue / $grandTotal) * $paid, 2);
                 $totalRevenue += $revenue;
@@ -93,8 +118,10 @@ class StaffEarningsService
                     'duration_minutes' => $minutes > 0 ? $minutes : null,
                     'revenue' => $revenue,
                     'collected' => $collectedShare,
-                    'commission_rate' => $commissionRate,
+                    'commission_rate' => $lineRate,
                     'commission' => $commission,
+                    'rule_name' => $resolved['rule_name'],
+                    'calc_type' => $resolved['calc_type'],
                     'payment_method' => $appointment->payment_method,
                     'branch' => $appointment->branch ? [
                         'id' => $appointment->branch->id,
@@ -180,11 +207,21 @@ class StaffEarningsService
     }
 
     /**
-     * @return list<array{service_name: string, revenue: float, duration_minutes: int|null, kind: string}>
+     * @return list<array{
+     *     service_name: string,
+     *     revenue: float,
+     *     duration_minutes: int|null,
+     *     kind: string,
+     *     service_id: int|null,
+     *     product_id: int|null,
+     *     category_id: int|null,
+     *     discount_allocated: float
+     * }>
      */
     private function staffLines(Appointment $appointment, int $staffId): array
     {
         $lines = [];
+        $appointmentDiscount = max((float) ($appointment->discount ?? 0), 0);
 
         if ($appointment->relationLoaded('services') && $appointment->services->isNotEmpty()) {
             foreach ($appointment->services as $line) {
@@ -197,6 +234,12 @@ class StaffEarningsService
                     'service_name' => $line->service?->name ?? 'Service',
                     'revenue' => (float) $line->price * max(1, (int) ($line->quantity ?? 1)),
                     'duration_minutes' => $line->duration_minutes,
+                    'service_id' => $line->service_id !== null ? (int) $line->service_id : null,
+                    'product_id' => null,
+                    'category_id' => $line->service?->category_id !== null
+                        ? (int) $line->service->category_id
+                        : null,
+                    'discount_allocated' => 0.0,
                 ];
             }
         }
@@ -212,25 +255,47 @@ class StaffEarningsService
                     'service_name' => $line->product?->name ?? 'Product',
                     'revenue' => (float) ($line->line_total ?? 0),
                     'duration_minutes' => null,
+                    'service_id' => null,
+                    'product_id' => $line->product_id !== null ? (int) $line->product_id : null,
+                    'category_id' => $line->product?->category_id !== null
+                        ? (int) $line->product->category_id
+                        : null,
+                    'discount_allocated' => 0.0,
                 ];
             }
         }
 
-        if ($lines !== []) {
-            return $lines;
-        }
-
-        if ((int) ($appointment->staff_id ?? 0) === $staffId) {
-            return [[
+        if ($lines === [] && (int) ($appointment->staff_id ?? 0) === $staffId) {
+            $lines[] = [
                 'kind' => 'service',
                 'service_name' => $appointment->service?->name ?? 'Service',
                 'revenue' => (float) ($appointment->grand_total ?? $appointment->price ?? 0),
                 'duration_minutes' => $appointment->starts_at && $appointment->ends_at
                     ? max(1, (int) $appointment->starts_at->diffInMinutes($appointment->ends_at))
                     : null,
-            ]];
+                'service_id' => $appointment->service_id !== null ? (int) $appointment->service_id : null,
+                'product_id' => null,
+                'category_id' => $appointment->service?->category_id !== null
+                    ? (int) $appointment->service->category_id
+                    : null,
+                'discount_allocated' => $appointmentDiscount,
+            ];
+
+            return $lines;
         }
 
-        return [];
+        if ($lines === []) {
+            return [];
+        }
+
+        $lineRevenueSum = array_sum(array_column($lines, 'revenue'));
+        if ($appointmentDiscount > 0 && $lineRevenueSum > 0) {
+            foreach ($lines as $index => $line) {
+                $share = ((float) $line['revenue'] / $lineRevenueSum) * $appointmentDiscount;
+                $lines[$index]['discount_allocated'] = round($share, 2);
+            }
+        }
+
+        return $lines;
     }
 }

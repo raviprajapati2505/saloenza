@@ -10,6 +10,7 @@ import PageHeader from '../components/ui/PageHeader.jsx'
 import BaseButton from '../components/ui/BaseButton.jsx'
 import BaseInput from '../components/ui/BaseInput.jsx'
 import BaseModal from '../components/ui/BaseModal.jsx'
+import PhoneWithCountryInput from '../components/inputs/PhoneWithCountryInput.jsx'
 import { useAuthStore } from '../stores/auth'
 import { subscriptionPageSubtitle } from '../lib/subscriptionModules.js'
 import { useTenantFormatter } from '../hooks/useTenantFormatter.js'
@@ -23,7 +24,7 @@ import {
   createCustomerTag,
 } from '../services/customerService.js'
 import { apiGet, parseList } from '../lib/apiHelpers'
-import { customerContactSubtitle, customerEmailDisplay, customerPhoneDisplay } from '../lib/customerContact.js'
+import { customerContactSubtitle, customerEmailDisplay, customerPhoneDisplay, customerWhatsappDisplay } from '../lib/customerContact.js'
 import { TENANT_PERMISSIONS } from '../lib/tenantPermissions.js'
 
 const TAG_COLORS = [
@@ -115,6 +116,22 @@ function TagBadge({ tag }) {
   )
 }
 
+const CLV_TIER_CLASS = {
+  platinum: 'bg-sky-50 text-sky-700 border-sky-200',
+  gold: 'bg-amber-50 text-amber-700 border-amber-200',
+  silver: 'bg-slate-100 text-slate-600 border-slate-200',
+  bronze: 'bg-orange-50 text-orange-700 border-orange-200',
+}
+
+function ClvBadge({ clv }) {
+  if (!clv?.clv_tier) return null
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 text-[10px] font-bold uppercase border rounded-full ${CLV_TIER_CLASS[clv.clv_tier] || CLV_TIER_CLASS.bronze}`}>
+      {clv.clv_tier}
+    </span>
+  )
+}
+
 function CustomerFormModal({
   open,
   customer,
@@ -131,6 +148,7 @@ function CustomerFormModal({
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
+  const [whatsapp, setWhatsapp] = useState('')
   const [birthday, setBirthday] = useState('')
   const [anniversary, setAnniversary] = useState('')
   const [notes, setNotes] = useState('')
@@ -149,6 +167,7 @@ function CustomerFormModal({
     setName(customer?.name || '')
     setEmail(customer?.email || '')
     setPhone(customer?.phone || '')
+    setWhatsapp(customer?.whatsapp || '')
     setBirthday(customer?.birthday || '')
     setAnniversary(customer?.anniversary || '')
     setNotes(customer?.notes || '')
@@ -207,6 +226,7 @@ function CustomerFormModal({
     if (canEditContact) {
       payload.email = email.trim() || null
       payload.phone = phone.trim() || null
+      payload.whatsapp = whatsapp.trim() || null
     }
     if (isSystemAdmin && !isEdit) {
       payload.saloon_id = Number(saloonId)
@@ -273,10 +293,30 @@ function CustomerFormModal({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <BaseInput label="Name" required value={name} onChange={(e) => setName(e.target.value)} error={errors.name} />
           {canEditContact ? (
-            <BaseInput label="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} error={errors.phone} />
+            <PhoneWithCountryInput
+              label="Phone"
+              optional
+              value={phone}
+              onChange={setPhone}
+              error={errors.phone}
+            />
           ) : (
             <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-500">
               Phone is hidden — only salon owners, branch managers, or staff who added this customer can view it.
+            </div>
+          )}
+          {canEditContact ? (
+            <PhoneWithCountryInput
+              label="WhatsApp"
+              optional
+              value={whatsapp}
+              onChange={setWhatsapp}
+              error={errors.whatsapp}
+              placeholder="WhatsApp number"
+            />
+          ) : (
+            <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-500">
+              WhatsApp is hidden for privacy.
             </div>
           )}
           {canEditContact ? (
@@ -505,6 +545,10 @@ function CustomerDetailModal({
                 <div><p className="text-[10px] text-slate-400 font-bold uppercase">Phone</p><p className="text-xs font-semibold text-slate-700">{customerPhoneDisplay(customer) || '—'}</p></div>
               </div>
               <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                <Phone className="w-4 h-4 text-emerald-500" />
+                <div><p className="text-[10px] text-slate-400 font-bold uppercase">WhatsApp</p><p className="text-xs font-semibold text-slate-700">{customerWhatsappDisplay(customer) || '—'}</p></div>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl">
                 <Clock className="w-4 h-4 text-slate-400" />
                 <div><p className="text-[10px] text-slate-400 font-bold uppercase">Birthday</p><p className="text-xs font-semibold text-slate-700">{formatDate(customer.birthday)}</p></div>
               </div>
@@ -617,9 +661,12 @@ function CustomerCard({ customer, onClick, showSalons }) {
       className="relative bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm cursor-pointer group overflow-hidden hover:border-slate-300">
       <div className="flex items-start justify-between mb-4">
         <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-sm font-black ${getAvatarBg(customer.name)}`}>{getInitials(customer.name)}</div>
-        <span className={`px-2 py-0.5 text-[10px] font-bold uppercase border rounded-full ${customer.is_active ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
-          {customer.is_active ? 'Active' : 'Inactive'}
-        </span>
+        <div className="flex flex-col items-end gap-1">
+          <span className={`px-2 py-0.5 text-[10px] font-bold uppercase border rounded-full ${customer.is_active ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
+            {customer.is_active ? 'Active' : 'Inactive'}
+          </span>
+          <ClvBadge clv={customer.clv} />
+        </div>
       </div>
       <h3 className="font-bold text-slate-900 group-hover:text-brand-600 transition-colors">{customer.name}</h3>
       <p className="text-xs text-slate-400 font-medium mt-0.5 truncate">{customerContactSubtitle(customer)}</p>

@@ -25,6 +25,7 @@ class StaffResource extends JsonResource
             'lastname' => $this->lastname,
             'email' => $this->email,
             'phone' => $this->phone,
+            'whatsapp' => $this->whatsapp,
             'photo' => $this->photo,
             'photo_url' => $this->photo_url,
             'is_active' => (bool) $this->is_active,

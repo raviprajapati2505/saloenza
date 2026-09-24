@@ -19,6 +19,14 @@ export function customerPhoneDisplay(customer) {
   return customer.phone || null
 }
 
+export function customerWhatsappDisplay(customer) {
+  if (!customer) return null
+  if (customer.can_view_contact === false) {
+    return customer.has_whatsapp ? 'Hidden' : null
+  }
+  return customer.whatsapp || null
+}
+
 export function customerEmailDisplay(customer) {
   if (!customer) return null
   if (customer.can_view_contact === false) {
@@ -32,8 +40,10 @@ export function customerHasContactOnFile(customer) {
   if (!customer) return false
   return Boolean(
     customer.has_phone
+    || customer.has_whatsapp
     || customer.has_email
     || customer.phone
+    || customer.whatsapp
     || customer.email,
   )
 }

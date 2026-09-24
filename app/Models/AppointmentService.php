@@ -14,6 +14,8 @@ class AppointmentService extends Model
         'staff_id',
         'is_staff_locked',
         'price',
+        'list_price',
+        'applied_pricing_rule_id',
         'quantity',
         'duration_minutes',
         'starts_at',
@@ -25,6 +27,7 @@ class AppointmentService extends Model
     {
         return [
             'price' => 'decimal:2',
+            'list_price' => 'decimal:2',
             'duration_minutes' => 'integer',
             'is_staff_locked' => 'boolean',
             'starts_at' => 'datetime',
@@ -51,5 +54,10 @@ class AppointmentService extends Model
     public function staff(): BelongsTo
     {
         return $this->belongsTo(User::class, 'staff_id');
+    }
+
+    public function appliedPricingRule(): BelongsTo
+    {
+        return $this->belongsTo(PricingRule::class, 'applied_pricing_rule_id');
     }
 }

@@ -18,10 +18,12 @@ import { isForbiddenError } from '../lib/apiErrors.js'
 import { subscriptionPageSubtitle } from '../lib/subscriptionModules.js'
 import { useTenantFormatter } from '../hooks/useTenantFormatter.js'
 import { downloadAppointmentReceipt, captureAppointmentPayment } from '../services/appointmentService.js'
+import { markDepositPaid } from '../services/noShowPolicyService.js'
 import { balanceDue, PAYMENT_STATUS_LABELS } from '../lib/appointmentPayments.js'
 import { customerPhoneDisplay } from '../lib/customerContact.js'
 import { pushToast } from '../stores/toast.js'
 import { ROLE_CODES } from '../lib/roleDisplay'
+import { TENANT_PERMISSIONS } from '../lib/tenantPermissions.js'
 
 const STATUS_BADGE = {
   scheduled: 'info',
@@ -41,11 +43,13 @@ export default function PosView() {
   const canUpdate = auth.can('appointments.update')
   const canView = auth.can('appointments.view')
   const canViewCustomers = auth.can('customers.view')
+  const canChargeDeposit = auth.can(TENANT_PERMISSIONS.PAYMENTS_CHARGE)
   const isStaff = auth.role?.code === ROLE_CODES.SALON_STAFF
 
   const [downloadingReceiptId, setDownloadingReceiptId] = useState(null)
   const [paymentTarget, setPaymentTarget] = useState(null)
   const [paymentSaving, setPaymentSaving] = useState(false)
+  const [depositBusyId, setDepositBusyId] = useState(null)
 
   const today = format(new Date(), 'yyyy-MM-dd')
 
@@ -122,6 +126,20 @@ export default function PosView() {
       throw err
     } finally {
       setPaymentSaving(false)
+    }
+  }
+
+  const handleMarkDepositPaid = async (event, appointmentId) => {
+    event.stopPropagation()
+    setDepositBusyId(appointmentId)
+    try {
+      await markDepositPaid(appointmentId)
+      pushToast('Deposit marked as paid.', 'success')
+      await refetch()
+    } catch (err) {
+      pushToast(err?.response?.data?.message || 'Unable to mark deposit paid.', 'error')
+    } finally {
+      setDepositBusyId(null)
     }
   }
 
@@ -248,6 +266,17 @@ export default function PosView() {
                     )}
                   </div>
                   <div className="flex items-start gap-2 shrink-0">
+                    {canChargeDeposit && appt.deposit_status === 'pending' && Number(appt.deposit_required_amount || 0) > 0 && (
+                      <button
+                        type="button"
+                        title={`Mark deposit paid (${fmt.money(appt.deposit_required_amount)})`}
+                        disabled={depositBusyId === appt.id}
+                        onClick={(e) => void handleMarkDepositPaid(e, appt.id)}
+                        className="rounded-lg border border-amber-200 bg-amber-50 px-2 py-2 text-xs font-bold text-amber-800 disabled:opacity-60"
+                      >
+                        Deposit
+                      </button>
+                    )}
                     {canUpdate && balanceDue(appt) > 0 && appt.payment_status !== 'refunded' && (
                       <button
                         type="button"

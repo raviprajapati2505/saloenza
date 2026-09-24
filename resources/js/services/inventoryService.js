@@ -55,6 +55,26 @@ export async function fetchProductSalesReport(params = {}) {
   return response?.data?.summary ?? response?.summary ?? null
 }
 
+export async function fetchInventoryClassifications(params = {}) {
+  const response = await apiGet('/v1/inventory/intelligence/classifications', params)
+  return response?.data?.classifications ?? []
+}
+
+export async function fetchInventoryStockoutRisks(params = {}) {
+  const response = await apiGet('/v1/inventory/intelligence/stockout-risks', params)
+  return response?.data?.risks ?? []
+}
+
+export async function fetchInventoryAlerts(params = {}) {
+  const response = await apiGet('/v1/inventory/intelligence/alerts', params)
+  return response?.data?.alerts ?? []
+}
+
+export async function recomputeInventoryIntelligence(params = {}) {
+  const response = await apiPost('/v1/inventory/intelligence/recompute', params)
+  return response?.data ?? {}
+}
+
 export async function fetchProducts(params = {}) {
   const response = await apiGet('/v1/products', { page: 1, per_page: 100, ...params })
   return parseList(response, 'products')

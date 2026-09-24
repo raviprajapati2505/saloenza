@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { format } from 'date-fns'
-import { CalendarDays, CheckCircle2, Clock, Loader2, Scissors } from 'lucide-react'
+import { CalendarDays, CheckCircle2, Clock, Loader2, Scissors, UserRound } from 'lucide-react'
 import BaseButton from '../../components/ui/BaseButton.jsx'
 import BaseInput from '../../components/ui/BaseInput.jsx'
 import BaseSelect from '../../components/ui/BaseSelect.jsx'
@@ -11,6 +11,7 @@ import {
   submitPublicBooking,
 } from '../../services/bookingLinkService.js'
 import { formatMoney } from '../../lib/tenantFormatting.js'
+import { pushToast } from '../../stores/toast.js'
 
 const STEPS = ['Services', 'Date & time', 'Your details', 'Confirm']
 
@@ -23,6 +24,7 @@ export default function PublicBookingView() {
   const [bootstrap, setBootstrap] = useState(null)
   const [selectedServices, setSelectedServices] = useState([])
   const [branchId, setBranchId] = useState('')
+  const [staffId, setStaffId] = useState('')
   const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'))
   const [slots, setSlots] = useState([])
   const [slotsLoading, setSlotsLoading] = useState(false)
@@ -54,12 +56,31 @@ export default function PublicBookingView() {
   }, [token])
 
   const services = bootstrap?.services ?? []
+  const branchStaff = useMemo(() => {
+    const allStaff = bootstrap?.staff ?? []
+    if (!branchId) return allStaff
+    return allStaff.filter((member) => String(member.branch_id) === String(branchId))
+  }, [bootstrap?.staff, branchId])
+
+  const selectedStaff = useMemo(
+    () => branchStaff.find((member) => String(member.id) === String(staffId)) || null,
+    [branchStaff, staffId],
+  )
+
   const selectedDetails = useMemo(
     () => services.filter((service) => selectedServices.includes(service.id)),
     [services, selectedServices],
   )
   const totalPrice = selectedDetails.reduce((sum, service) => sum + (Number(service.price) || 0), 0)
   const totalDuration = selectedDetails.reduce((sum, service) => sum + (Number(service.duration_minutes) || 0), 0)
+
+  useEffect(() => {
+    if (staffId && !branchStaff.some((member) => String(member.id) === String(staffId))) {
+      setStaffId('')
+      setSelectedSlot(null)
+      setSlots([])
+    }
+  }, [branchStaff, staffId])
 
   const toggleService = (serviceId) => {
     setSelectedServices((current) => (
@@ -70,13 +91,14 @@ export default function PublicBookingView() {
   }
 
   const loadSlots = async () => {
-    if (!selectedServices.length) return
+    if (!selectedServices.length || !staffId) return
     setSlotsLoading(true)
     setError('')
     try {
       const data = await fetchPublicBookingSlots(token, {
         date,
         branch_id: branchId || undefined,
+        staff_id: Number(staffId),
         service_ids: selectedServices,
       })
       setSlots(data?.slots ?? [])
@@ -90,10 +112,18 @@ export default function PublicBookingView() {
   }
 
   useEffect(() => {
-    if (step === 1 && selectedServices.length) {
+    if (step === 1 && selectedServices.length && staffId) {
       void loadSlots()
     }
-  }, [step, date, branchId, selectedServices.join(',')])
+  }, [step, date, branchId, staffId, selectedServices.join(',')])
+
+  const handleSlotClick = (slot) => {
+    if (!slot.available) {
+      pushToast(slot.unavailable_reason || 'Selected staff is not available at this time.', 'error')
+      return
+    }
+    setSelectedSlot(slot)
+  }
 
   const handleSubmit = async () => {
     setSubmitting(true)
@@ -101,6 +131,7 @@ export default function PublicBookingView() {
     try {
       const appointment = await submitPublicBooking(token, {
         branch_id: branchId ? Number(branchId) : undefined,
+        staff_id: Number(staffId),
         service_ids: selectedServices,
         starts_at: selectedSlot.starts_at,
         customer_name: customer.name.trim(),
@@ -142,7 +173,7 @@ export default function PublicBookingView() {
         <div className="mb-8 text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-500">Book online</p>
           <h1 className="mt-2 text-3xl font-bold text-slate-900">{bootstrap.salon?.name}</h1>
-          <p className="mt-2 text-sm text-slate-600">Choose services, pick a time, and confirm in a few steps.</p>
+          <p className="mt-2 text-sm text-slate-600">Choose services, pick a staff member and time, then confirm.</p>
         </div>
 
         <div className="mb-6 flex flex-wrap justify-center gap-2">
@@ -207,24 +238,49 @@ export default function PublicBookingView() {
 
           {step === 1 ? (
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-slate-900">Choose date & time</h2>
+              <h2 className="text-lg font-semibold text-slate-900">Choose staff, date & time</h2>
               {bootstrap.branches?.length > 1 && !bootstrap.link?.branch_id ? (
                 <BaseSelect
                   label="Branch"
                   value={branchId}
-                  onChange={(event) => setBranchId(event.target.value)}
+                  onChange={(event) => {
+                    setBranchId(event.target.value)
+                    setStaffId('')
+                    setSelectedSlot(null)
+                  }}
                   options={bootstrap.branches.map((branch) => ({
                     value: String(branch.id),
                     label: branch.name,
                   }))}
                 />
               ) : null}
+              <BaseSelect
+                label="Staff"
+                value={staffId}
+                onChange={(event) => {
+                  setStaffId(event.target.value)
+                  setSelectedSlot(null)
+                }}
+                placeholder="Select a staff member"
+                options={branchStaff.map((member) => ({
+                  value: String(member.id),
+                  label: member.name,
+                }))}
+              />
+              {!branchStaff.length ? (
+                <p className="text-sm text-amber-700">No staff members are available for this branch.</p>
+              ) : null}
               <BaseInput label="Date" type="date" value={date} min={format(new Date(), 'yyyy-MM-dd')} onChange={(event) => setDate(event.target.value)} />
               <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4 text-sm text-slate-600">
                 <div className="flex items-center gap-2"><Scissors className="h-4 w-4" /> {selectedDetails.length} services selected</div>
                 <div className="mt-1 flex items-center gap-2"><Clock className="h-4 w-4" /> {totalDuration} minutes · {money(totalPrice)}</div>
+                {selectedStaff ? (
+                  <div className="mt-1 flex items-center gap-2"><UserRound className="h-4 w-4" /> {selectedStaff.name}</div>
+                ) : null}
               </div>
-              {slotsLoading ? (
+              {!staffId ? (
+                <p className="text-sm text-slate-500">Select a staff member to see available times.</p>
+              ) : slotsLoading ? (
                 <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-brand-500" /></div>
               ) : (
                 <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
@@ -232,11 +288,14 @@ export default function PublicBookingView() {
                     <button
                       key={slot.starts_at}
                       type="button"
-                      onClick={() => setSelectedSlot(slot)}
+                      onClick={() => handleSlotClick(slot)}
+                      aria-disabled={!slot.available}
                       className={`rounded-xl border px-3 py-2 text-sm font-semibold transition ${
-                        selectedSlot?.starts_at === slot.starts_at
-                          ? 'border-brand-400 bg-brand-500 text-white'
-                          : 'border-slate-200 bg-white text-slate-700 hover:border-brand-300'
+                        !slot.available
+                          ? 'cursor-not-allowed border-slate-100 bg-slate-100 text-slate-400 line-through'
+                          : selectedSlot?.starts_at === slot.starts_at
+                            ? 'border-brand-400 bg-brand-500 text-white'
+                            : 'border-slate-200 bg-white text-slate-700 hover:border-brand-300'
                       }`}
                     >
                       {slot.label}
@@ -244,8 +303,11 @@ export default function PublicBookingView() {
                   ))}
                 </div>
               )}
-              {!slotsLoading && slots.length === 0 ? (
+              {staffId && !slotsLoading && slots.length === 0 ? (
                 <p className="text-sm text-slate-500">No open slots for this date. Try another day.</p>
+              ) : null}
+              {staffId && !slotsLoading && slots.length > 0 && !slots.some((slot) => slot.available) ? (
+                <p className="text-sm text-slate-500">Selected staff has no open times on this date. Try another day or staff member.</p>
               ) : null}
               <div className="flex gap-3">
                 <BaseButton variant="secondary" onClick={() => setStep(0)}>Back</BaseButton>
@@ -273,6 +335,7 @@ export default function PublicBookingView() {
               <h2 className="text-lg font-semibold text-slate-900">Review & confirm</h2>
               <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4 text-sm text-slate-700">
                 <p><strong>Services:</strong> {selectedDetails.map((service) => service.name).join(', ')}</p>
+                <p className="mt-2"><strong>Staff:</strong> {selectedStaff?.name || '—'}</p>
                 <p className="mt-2"><strong>When:</strong> {selectedSlot ? format(new Date(selectedSlot.starts_at), 'EEE, d MMM yyyy · p') : '—'}</p>
                 <p className="mt-2"><strong>Duration:</strong> {totalDuration} minutes</p>
                 <p className="mt-2"><strong>Estimated total:</strong> {money(totalPrice)}</p>

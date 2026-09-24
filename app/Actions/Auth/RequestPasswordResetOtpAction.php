@@ -87,7 +87,15 @@ class RequestPasswordResetOtpAction
             throw new HttpException(422, 'No user found for the provided phone number.');
         }
 
-        return [$user, 'sms', $destination];
+        // TODO: WhatsApp — deliver password-reset OTP via WhatsApp for phone logins.
+        if (filled($user->email)) {
+            return [$user, 'email', (string) $user->email];
+        }
+
+        throw new HttpException(
+            422,
+            'SMS verification is no longer available. Add an email to your account or contact support to reset your password.',
+        );
     }
 
     private function generateCode(): string

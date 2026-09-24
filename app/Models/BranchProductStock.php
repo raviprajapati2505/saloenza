@@ -16,6 +16,14 @@ class BranchProductStock extends Model
         'cost_price',
         'selling_price',
         'max_stock',
+        'avg_daily_sales_7d',
+        'avg_daily_sales_30d',
+        'avg_daily_sales_90d',
+        'days_of_cover',
+        'days_to_stockout',
+        'velocity_class',
+        'suggested_reorder_qty',
+        'metrics_updated_at',
     ];
 
     protected function casts(): array
@@ -26,6 +34,13 @@ class BranchProductStock extends Model
             'max_stock' => 'integer',
             'cost_price' => 'decimal:2',
             'selling_price' => 'decimal:2',
+            'avg_daily_sales_7d' => 'decimal:4',
+            'avg_daily_sales_30d' => 'decimal:4',
+            'avg_daily_sales_90d' => 'decimal:4',
+            'days_of_cover' => 'decimal:2',
+            'days_to_stockout' => 'decimal:2',
+            'suggested_reorder_qty' => 'integer',
+            'metrics_updated_at' => 'datetime',
         ];
     }
 

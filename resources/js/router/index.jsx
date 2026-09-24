@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import SalonReportsView from '../views/SalonReportsView.jsx'
 import PlatformReportsView from '../views/admin/PlatformReportsView.jsx'
 import AppointmentsView from '../views/AppointmentsView.jsx'
+import AppointmentImportView from '../views/AppointmentImportView.jsx'
 import PosView from '../views/PosView.jsx'
 import LiveQueueView from '../views/LiveQueueView.jsx'
 import StaffEarningsView from '../views/StaffEarningsView.jsx'
@@ -48,6 +49,19 @@ import AffiliateCommissionsView from '../views/affiliate/AffiliateCommissionsVie
 import AffiliateWithdrawalsView from '../views/affiliate/AffiliateWithdrawalsView.jsx'
 import AffiliateReportsView from '../views/affiliate/AffiliateReportsView.jsx'
 import SalonReferralProgramView from '../views/referrals/SalonReferralProgramView.jsx'
+import CommissionsView from '../views/CommissionsView.jsx'
+import RetentionView from '../views/RetentionView.jsx'
+import SalonInsightsView from '../views/SalonInsightsView.jsx'
+import BranchBenchmarkView from '../views/BranchBenchmarkView.jsx'
+import MarketingView from '../views/MarketingView.jsx'
+import PackagesView from '../views/PackagesView.jsx'
+import GiftCardsView from '../views/GiftCardsView.jsx'
+import WaitlistView from '../views/WaitlistView.jsx'
+import NoShowPolicyView from '../views/NoShowPolicyView.jsx'
+import PricingRulesView from '../views/PricingRulesView.jsx'
+import PayrollView from '../views/PayrollView.jsx'
+import ReviewsView from '../views/ReviewsView.jsx'
+import AttendanceView from '../views/AttendanceView.jsx'
 import { PLATFORM_PERMISSIONS } from '../lib/platformPermissions.js'
 import { TENANT_PERMISSIONS } from '../lib/tenantPermissions.js'
 import {
@@ -195,6 +209,58 @@ export function AppRoutes() {
               <Route path="/analytics" element={<Navigate to="/reports" replace />} />
             </Route>
 
+            <Route element={<RequireTenantPermission permission={TENANT_PERMISSIONS.ANALYTICS_INSIGHTS_VIEW} />}>
+              <Route path="/insights" element={<SalonInsightsView />} />
+            </Route>
+
+            <Route element={<RequireTenantPermission anyPermission={[TENANT_PERMISSIONS.ANALYTICS_BENCHMARK_VIEW, TENANT_PERMISSIONS.ANALYTICS_VIEW]} />}>
+              <Route path="/benchmarks" element={<BranchBenchmarkView />} />
+            </Route>
+
+            <Route element={<RequireTenantPermission permission={TENANT_PERMISSIONS.CRM_RETENTION_VIEW} />}>
+              <Route path="/retention" element={<RetentionView />} />
+            </Route>
+
+            <Route element={<RequireTenantPermission permission={TENANT_PERMISSIONS.MARKETING_VIEW} />}>
+              <Route path="/marketing" element={<MarketingView />} />
+            </Route>
+
+            <Route element={<RequireTenantPermission permission={TENANT_PERMISSIONS.PACKAGES_VIEW} />}>
+              <Route path="/packages" element={<PackagesView />} />
+            </Route>
+
+            <Route element={<RequireTenantPermission permission={TENANT_PERMISSIONS.GIFTCARDS_VIEW} />}>
+              <Route path="/gift-cards" element={<GiftCardsView />} />
+            </Route>
+
+            <Route element={<RequireTenantPermission permission={TENANT_PERMISSIONS.COMMISSIONS_VIEW} />}>
+              <Route path="/commissions" element={<CommissionsView />} />
+            </Route>
+
+            <Route element={<RequireTenantPermission permission={TENANT_PERMISSIONS.PAYROLL_VIEW} />}>
+              <Route path="/payroll" element={<PayrollView />} />
+            </Route>
+
+            <Route element={<RequireTenantPermission permission={TENANT_PERMISSIONS.REVIEWS_VIEW} />}>
+              <Route path="/reviews" element={<ReviewsView />} />
+            </Route>
+
+            <Route element={<RequireTenantPermission permission={[TENANT_PERMISSIONS.ATTENDANCE_VIEW, TENANT_PERMISSIONS.ATTENDANCE_PUNCH]} />}>
+              <Route path="/attendance" element={<AttendanceView />} />
+            </Route>
+
+            <Route element={<RequireTenantPermission permission={TENANT_PERMISSIONS.WAITLIST_VIEW} />}>
+              <Route path="/waitlist" element={<WaitlistView />} />
+            </Route>
+
+            <Route element={<RequireTenantPermission permission={TENANT_PERMISSIONS.PAYMENTS_POLICY_MANAGE} />}>
+              <Route path="/no-show-policy" element={<NoShowPolicyView />} />
+            </Route>
+
+            <Route element={<RequireTenantPermission permission={TENANT_PERMISSIONS.PRICING_RULES_VIEW} />}>
+              <Route path="/pricing-rules" element={<PricingRulesView />} />
+            </Route>
+
             <Route element={<RequireTenantPermission permission={TENANT_PERMISSIONS.SETTINGS_VIEW} />}>
               <Route path="/settings" element={<SettingsView />} />
             </Route>
@@ -210,6 +276,16 @@ export function AppRoutes() {
             <Route element={<RequireTenantPermission permission={TENANT_PERMISSIONS.ASSIGN_PERMISSIONS_VIEW} />}>
               <Route path="/assign-permissions" element={<AssignPermissionsView />} />
             </Route>
+
+            <Route
+              path="/appointment-imports"
+              element={(
+                <ProtectedPath
+                  path="/appointment-imports"
+                  element={<AppointmentImportView />}
+                />
+              )}
+            />
 
             <Route element={<RequireTenantPermission permission={TENANT_PERMISSIONS.APPOINTMENTS_VIEW} />}>
               <Route path="/appointments" element={<AppointmentsView />} />

@@ -9,6 +9,7 @@ import BaseModal from '../components/ui/BaseModal.jsx'
 import BaseSelect from '../components/ui/BaseSelect.jsx'
 import SubscriptionAccessFallback from '../components/subscription/SubscriptionAccessFallback.jsx'
 import ProductSalesPanel from '../components/inventory/ProductSalesPanel.jsx'
+import InventoryIntelligencePanel from '../components/inventory/InventoryIntelligencePanel.jsx'
 import { useAuthStore } from '../stores/auth'
 import { useTenantFormatter } from '../hooks/useTenantFormatter.js'
 import { authHasModule, canMutate, subscriptionPageSubtitle } from '../lib/subscriptionModules.js'
@@ -35,6 +36,7 @@ const TABS = [
   { key: 'stock', label: 'Stock' },
   { key: 'orders', label: 'Purchase Orders' },
   { key: 'sales', label: 'Product Sales' },
+  { key: 'intelligence', label: 'Intelligence' },
 ]
 
 function isoDaysAgo(days) {
@@ -333,6 +335,12 @@ export default function InventoryView() {
           range={salesRange}
           onRangeChange={setSalesRange}
           report={salesReport}
+        />
+      ) : tab === 'intelligence' ? (
+        <InventoryIntelligencePanel
+          branchId={branchId}
+          canManage={canManage}
+          fmt={fmt}
         />
       ) : tab === 'stock' ? (
         <>

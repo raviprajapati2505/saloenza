@@ -29,6 +29,8 @@ class Appointment extends Model
 
     public const SOURCE_SELF_BOOKING = 'self_booking';
 
+    public const SOURCE_IMPORT = 'import';
+
     protected $fillable = [
         'saloon_id',
         'branch_id',
@@ -41,6 +43,7 @@ class Appointment extends Model
         'status',
         'type',
         'booking_source',
+        'import_key',
         'price',
         'services_total',
         'products_total',
@@ -50,6 +53,11 @@ class Appointment extends Model
         'payment_method',
         'amount_paid',
         'paid_at',
+        'deposit_required_amount',
+        'deposit_status',
+        'deposit_paid_at',
+        'no_show_fee_amount',
+        'no_show_fee_status',
         'invoice_number',
         'reminder_sent_at',
         'payment_reminder_sent_at',
@@ -71,6 +79,9 @@ class Appointment extends Model
             'grand_total' => 'decimal:2',
             'amount_paid' => 'decimal:2',
             'paid_at' => 'datetime',
+            'deposit_required_amount' => 'decimal:2',
+            'deposit_paid_at' => 'datetime',
+            'no_show_fee_amount' => 'decimal:2',
         ];
     }
 

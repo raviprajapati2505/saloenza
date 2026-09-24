@@ -54,116 +54,11 @@ return [
                 ],
             ],
         ],
-        'email' => [
-            'label' => 'Email Delivery',
-            'description' => 'Configure outbound email for appointment confirmations, reminders, and receipts.',
-            'platform_manageable' => true,
-            'settings' => [
-                'use_custom' => [
-                    'label' => 'Use Custom Email Settings',
-                    'description' => 'For a salon, use that salon\'s SMTP instead of workspace defaults. Workspace SMTP is used automatically whenever an SMTP host is saved.',
-                    'type' => 'boolean',
-                    'default' => false,
-                ],
-                'from_name' => [
-                    'label' => 'From Name',
-                    'description' => 'Sender name recipients see in their inbox.',
-                    'type' => 'string',
-                    'default' => env('MAIL_FROM_NAME', env('APP_NAME', 'Saloenza')),
-                ],
-                'from_email' => [
-                    'label' => 'From Email',
-                    'description' => 'Must be a verified sender address.',
-                    'type' => 'string',
-                    'default' => env('MAIL_FROM_ADDRESS', 'hello@glowsuite.com'),
-                ],
-                'reply_to' => [
-                    'label' => 'Reply-To Email',
-                    'description' => 'Optional reply address for customer responses.',
-                    'type' => 'string',
-                    'default' => '',
-                ],
-                'smtp_host' => [
-                    'label' => 'SMTP Host',
-                    'type' => 'string',
-                    'default' => env('MAIL_HOST', ''),
-                ],
-                'smtp_port' => [
-                    'label' => 'SMTP Port',
-                    'type' => 'number',
-                    'default' => (int) env('MAIL_PORT', 587),
-                    'min' => 1,
-                    'max' => 65535,
-                    'integer' => true,
-                ],
-                'smtp_encryption' => [
-                    'label' => 'Encryption',
-                    'type' => 'select',
-                    'options' => [
-                        ['value' => 'tls', 'label' => 'TLS'],
-                        ['value' => 'ssl', 'label' => 'SSL'],
-                        ['value' => 'none', 'label' => 'None'],
-                    ],
-                    'default' => env('MAIL_ENCRYPTION', 'tls') ?: 'tls',
-                ],
-                'smtp_username' => [
-                    'label' => 'SMTP Username',
-                    'type' => 'string',
-                    'default' => env('MAIL_USERNAME', ''),
-                ],
-                'smtp_password' => [
-                    'label' => 'SMTP Password',
-                    'description' => 'Stored encrypted. Leave blank to keep existing password.',
-                    'type' => 'secret',
-                    'default' => env('MAIL_PASSWORD', ''),
-                ],
-            ],
-        ],
-        'sms' => [
-            'label' => 'SMS & Text Messages',
-            'description' => 'Configure SMS delivery for OTP and appointment reminders.',
-            'platform_manageable' => true,
-            'settings' => [
-                'use_custom' => [
-                    'label' => 'Use Custom SMS Settings',
-                    'description' => 'When disabled, platform default SMS delivery is used.',
-                    'type' => 'boolean',
-                    'default' => false,
-                ],
-                'provider' => [
-                    'label' => 'SMS Provider',
-                    'type' => 'select',
-                    'options' => [
-                        ['value' => 'platform', 'label' => 'Platform Default'],
-                        ['value' => 'aws_sns', 'label' => 'AWS SNS'],
-                        ['value' => 'msg91', 'label' => 'MSG91'],
-                        ['value' => 'twilio', 'label' => 'Twilio'],
-                    ],
-                    'default' => 'platform',
-                ],
-                'sender_id' => [
-                    'label' => 'Sender ID / From Number',
-                    'description' => 'Alphanumeric sender ID (MSG91/AWS) or Twilio phone number.',
-                    'type' => 'string',
-                    'default' => env('OTP_AWS_SMS_SENDER_ID', 'SALOENZA'),
-                ],
-                'account_sid' => [
-                    'label' => 'Twilio Account SID',
-                    'description' => 'Required when using Twilio as SMS provider.',
-                    'type' => 'string',
-                    'default' => '',
-                ],
-                'api_key' => [
-                    'label' => 'API Key / Auth Token',
-                    'description' => 'Stored encrypted. Leave blank to keep existing key.',
-                    'type' => 'secret',
-                    'default' => '',
-                ],
-            ],
-        ],
+        // Email delivery is configured only via .env (Brevo API / BREVO_API_KEY). Do not re-add UI settings.
+        // SMS delivery removed — future WhatsApp integration will replace it.
         'notifications' => [
             'label' => 'Notification Preferences',
-            'description' => 'Control which automated messages are sent to your customers and staff.',
+            'description' => 'Control which automated email messages are sent to your customers and staff.',
             'platform_manageable' => true,
             'settings' => [
                 'appointment_confirmation' => [
@@ -302,6 +197,19 @@ return [
                         ['value' => '24h', 'label' => '24-hour (14:30)'],
                     ],
                     'default' => '12h',
+                ],
+            ],
+        ],
+        'reviews' => [
+            'label' => 'Reviews & Reputation',
+            'description' => 'Google review link and post-visit feedback settings.',
+            'platform_manageable' => false,
+            'settings' => [
+                'google_review_url' => [
+                    'label' => 'Google Review URL',
+                    'description' => 'Public Google review / maps write-a-review link. Only shared when internal rating is 4 or 5.',
+                    'type' => 'string',
+                    'default' => '',
                 ],
             ],
         ],

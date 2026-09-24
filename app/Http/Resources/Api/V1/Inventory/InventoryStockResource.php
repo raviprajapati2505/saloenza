@@ -47,6 +47,14 @@ class InventoryStockResource extends JsonResource
                 'id' => $this->supplier->id,
                 'name' => $this->supplier->name,
             ] : null),
+            'avg_daily_sales_7d' => $this->avg_daily_sales_7d !== null ? (float) $this->avg_daily_sales_7d : null,
+            'avg_daily_sales_30d' => $this->avg_daily_sales_30d !== null ? (float) $this->avg_daily_sales_30d : null,
+            'avg_daily_sales_90d' => $this->avg_daily_sales_90d !== null ? (float) $this->avg_daily_sales_90d : null,
+            'days_of_cover' => $this->days_of_cover !== null ? (float) $this->days_of_cover : null,
+            'days_to_stockout' => $this->days_to_stockout !== null ? (float) $this->days_to_stockout : null,
+            'velocity_class' => $this->velocity_class,
+            'suggested_reorder_qty' => $this->suggested_reorder_qty !== null ? (int) $this->suggested_reorder_qty : null,
+            'metrics_updated_at' => $this->metrics_updated_at?->toISOString(),
         ];
     }
 }

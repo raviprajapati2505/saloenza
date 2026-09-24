@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { isValidE164 } from '../../../lib/phoneNumber.js'
 
 export const salonSchema = z.object({
   business_name: z.string().min(1, 'Business name is required'),
@@ -43,7 +44,12 @@ export const ownerSchema = z.object({
   phone: z
     .string()
     .min(1, 'Phone is required')
-    .regex(/^\d{10}$/, 'Phone must be exactly 10 digits'),
+    .refine(isValidE164, 'Select country code and enter a valid phone number'),
+  whatsapp: z
+    .string()
+    .optional()
+    .default('')
+    .refine((value) => !value || isValidE164(value), 'Select country code and enter a valid WhatsApp number'),
   password: z.string().optional().default(''),
   active: z.boolean().default(true),
 })

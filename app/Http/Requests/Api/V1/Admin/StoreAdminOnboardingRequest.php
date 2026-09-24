@@ -4,6 +4,7 @@ namespace App\Http\Requests\Api\V1\Admin;
 
 use App\Support\Concerns\AuthorizesPermission;
 use App\Support\PasswordRules;
+use App\Support\Phone\PhoneNumber;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -23,6 +24,17 @@ class StoreAdminOnboardingRequest extends FormRequest
         if (is_array($saloon) && isset($saloon['business_name'])) {
             $saloon['business_name'] = trim((string) $saloon['business_name']);
             $this->merge(['saloon' => $saloon]);
+        }
+
+        $user = $this->input('user');
+        if (is_array($user)) {
+            if (array_key_exists('phone', $user)) {
+                $user['phone'] = PhoneNumber::normalize($user['phone'] ?? null);
+            }
+            if (array_key_exists('whatsapp', $user)) {
+                $user['whatsapp'] = PhoneNumber::normalize($user['whatsapp'] ?? null);
+            }
+            $this->merge(['user' => $user]);
         }
     }
 
@@ -53,7 +65,8 @@ class StoreAdminOnboardingRequest extends FormRequest
             'user.firstname' => ['required', 'string', 'max:120'],
             'user.lastname' => ['required', 'string', 'max:120'],
             'user.email' => ['required', 'string', 'email', 'max:120', Rule::unique('users', 'email')],
-            'user.phone' => ['required', 'string', 'regex:/^\+?[0-9\s\-()]{7,20}$/', Rule::unique('users', 'phone')],
+            'user.phone' => ['required', 'string', 'regex:'.PhoneNumber::E164_REGEX, Rule::unique('users', 'phone')],
+            'user.whatsapp' => ['nullable', 'string', 'regex:'.PhoneNumber::E164_REGEX],
             'user.password' => ['nullable', 'confirmed', PasswordRules::defaults()],
             'user.is_active' => ['required', 'boolean'],
 

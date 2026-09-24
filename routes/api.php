@@ -9,12 +9,33 @@ use App\Http\Controllers\Api\V1\Admin\AdminSubscriptionHistoryController;
 use App\Http\Controllers\Api\V1\Admin\AdminSubscriptionRenewalController;
 use App\Http\Controllers\Api\V1\Admin\AdminSubscriptionUpgradeController;
 use App\Http\Controllers\Api\V1\Affiliate\AffiliatePortalController;
+use App\Http\Controllers\Api\V1\Analytics\BranchBenchmarkController;
 use App\Http\Controllers\Api\V1\Analytics\BusinessLedgerController;
 use App\Http\Controllers\Api\V1\Analytics\OutstandingPaymentReportController;
 use App\Http\Controllers\Api\V1\Analytics\ProductSalesReportController;
 use App\Http\Controllers\Api\V1\Analytics\ProfitReportController;
 use App\Http\Controllers\Api\V1\Analytics\SalonAnalyticsController;
+use App\Http\Controllers\Api\V1\Analytics\SalonInsightsController;
+use App\Http\Controllers\Api\V1\Attendance\AttendanceController;
+use App\Http\Controllers\Api\V1\Commission\CommissionPayoutController;
+use App\Http\Controllers\Api\V1\Commission\CommissionRuleController;
+use App\Http\Controllers\Api\V1\Commission\CommissionSchemeController;
+use App\Http\Controllers\Api\V1\Commission\StaffCommissionAssignmentController;
+use App\Http\Controllers\Api\V1\Customer\CustomerClvController;
+use App\Http\Controllers\Api\V1\Customer\RetentionController;
+use App\Http\Controllers\Api\V1\GiftCard\GiftCardController;
+use App\Http\Controllers\Api\V1\Inventory\InventoryIntelligenceController;
+use App\Http\Controllers\Api\V1\Marketing\MarketingCampaignController;
+use App\Http\Controllers\Api\V1\Marketing\MarketingSegmentController;
+use App\Http\Controllers\Api\V1\NoShow\NoShowPolicyController;
+use App\Http\Controllers\Api\V1\Package\CustomerPackageController;
+use App\Http\Controllers\Api\V1\Package\PackageController;
+use App\Http\Controllers\Api\V1\Payroll\PayrollController;
+use App\Http\Controllers\Api\V1\Pricing\PricingRuleController;
+use App\Http\Controllers\Api\V1\Review\ReviewController;
+use App\Http\Controllers\Api\V1\Waitlist\WaitlistController;
 use App\Http\Controllers\Api\V1\Appointment\AppointmentController;
+use App\Http\Controllers\Api\V1\Appointment\AppointmentImportController;
 use App\Http\Controllers\Api\V1\Appointment\AppointmentPaymentController;
 use App\Http\Controllers\Api\V1\Appointment\AppointmentReceiptController;
 use App\Http\Controllers\Api\V1\Auth\LoginController;
@@ -251,6 +272,10 @@ Route::prefix('v1')->group(function (): void {
             Route::patch('branches/{branch}', [BranchController::class, 'update']);
         });
 
+        Route::get('appointment-imports/sample.csv', [AppointmentImportController::class, 'sample']);
+        Route::post('appointment-imports/preview', [AppointmentImportController::class, 'preview']);
+        Route::post('appointment-imports/commit', [AppointmentImportController::class, 'commit']);
+
         Route::middleware(['tenant.permission:appointments.view', 'subscription.module:appointments'])->group(function (): void {
             Route::get('pos/catalog', [PosController::class, 'catalog']);
             Route::get('appointments/booking-options', [AppointmentController::class, 'bookingOptions']);
@@ -289,6 +314,8 @@ Route::prefix('v1')->group(function (): void {
 
         Route::middleware(['tenant.permission:customers.view', 'subscription.module:customers'])->group(function (): void {
             Route::get('customers', [CustomerController::class, 'index']);
+            Route::get('customers/clv', [CustomerClvController::class, 'index']);
+            Route::get('clv/summary', [CustomerClvController::class, 'summary']);
             Route::get('customers/{customer}', [CustomerController::class, 'show']);
             Route::get('customer-tags', [CustomerTagController::class, 'index']);
         });
@@ -302,6 +329,22 @@ Route::prefix('v1')->group(function (): void {
             Route::put('customer-tags/{tag}', [CustomerTagController::class, 'update']);
             Route::patch('customer-tags/{tag}', [CustomerTagController::class, 'update']);
             Route::delete('customer-tags/{tag}', [CustomerTagController::class, 'destroy']);
+            Route::post('clv/recompute', [CustomerClvController::class, 'recompute']);
+        });
+
+        Route::middleware(['tenant.permission:crm.retention.view', 'subscription.module:customers'])->group(function (): void {
+            Route::get('retention/policies', [RetentionController::class, 'policiesIndex']);
+            Route::get('retention/customers', [RetentionController::class, 'customers']);
+            Route::get('retention/cohorts', [RetentionController::class, 'cohortsIndex']);
+            Route::get('retention/cohorts/{cohort}', [RetentionController::class, 'cohortsShow']);
+        });
+
+        Route::middleware(['tenant.permission:crm.retention.manage', 'subscription.module:customers'])->group(function (): void {
+            Route::post('retention/policies', [RetentionController::class, 'policiesStore']);
+            Route::match(['put', 'patch'], 'retention/policies/{policy}', [RetentionController::class, 'policiesUpdate']);
+            Route::post('retention/classify', [RetentionController::class, 'classify']);
+            Route::post('retention/cohorts', [RetentionController::class, 'cohortsStore']);
+            Route::post('retention/cohorts/{cohort}/send', [RetentionController::class, 'cohortsSend']);
         });
 
         Route::middleware(['tenant.permission:analytics.view', 'subscription.module:analytics'])->group(function (): void {
@@ -309,6 +352,14 @@ Route::prefix('v1')->group(function (): void {
             Route::get('reports/profit-loss', [ProfitReportController::class, 'summary']);
             Route::get('reports/outstanding-payments', [OutstandingPaymentReportController::class, 'summary']);
             Route::get('reports/business-close', [BusinessLedgerController::class, 'summary']);
+        });
+
+        Route::middleware(['tenant.permission:analytics.insights.view', 'subscription.module:analytics'])->group(function (): void {
+            Route::get('analytics/insights', [SalonInsightsController::class, 'index']);
+        });
+
+        Route::middleware(['tenant.permission:analytics.benchmark.view|analytics.view', 'subscription.module:analytics'])->group(function (): void {
+            Route::get('analytics/benchmarks', [BranchBenchmarkController::class, 'compare']);
         });
 
         Route::middleware(['tenant.permission:expenses.view', 'subscription.module:analytics'])->group(function (): void {
@@ -327,6 +378,9 @@ Route::prefix('v1')->group(function (): void {
             Route::get('inventory/summary', [InventoryController::class, 'summary']);
             Route::get('inventory/stock', [InventoryController::class, 'stock']);
             Route::get('inventory/movements', [InventoryController::class, 'movements']);
+            Route::get('inventory/intelligence/classifications', [InventoryIntelligenceController::class, 'classifications']);
+            Route::get('inventory/intelligence/stockout-risks', [InventoryIntelligenceController::class, 'stockoutRisks']);
+            Route::get('inventory/intelligence/alerts', [InventoryIntelligenceController::class, 'alerts']);
             Route::get('suppliers', [SupplierController::class, 'index']);
             Route::get('purchase-orders', [PurchaseOrderController::class, 'index']);
             Route::get('purchase-orders/{purchaseOrder}', [PurchaseOrderController::class, 'show']);
@@ -335,6 +389,7 @@ Route::prefix('v1')->group(function (): void {
         Route::middleware(['tenant.permission:inventory.manage', 'subscription.module:inventory'])->group(function (): void {
             Route::post('inventory/stock', [InventoryController::class, 'storeStock']);
             Route::post('inventory/stock/{stock}/adjust', [InventoryController::class, 'adjust']);
+            Route::post('inventory/intelligence/recompute', [InventoryIntelligenceController::class, 'recompute']);
             Route::post('suppliers', [SupplierController::class, 'store']);
             Route::put('suppliers/{supplier}', [SupplierController::class, 'update']);
             Route::patch('suppliers/{supplier}', [SupplierController::class, 'update']);
@@ -364,6 +419,165 @@ Route::prefix('v1')->group(function (): void {
         Route::middleware(['tenant.permission:staff.earnings.view', 'subscription.module:staff'])->group(function (): void {
             Route::get('staff/earnings', [StaffEarningsController::class, 'index']);
             Route::get('staff/earnings/presets', [StaffEarningsController::class, 'presets']);
+        });
+
+        Route::middleware(['tenant.permission:commissions.view', 'subscription.module:staff'])->group(function (): void {
+            Route::get('commissions/schemes', [CommissionSchemeController::class, 'index']);
+            Route::get('commissions/schemes/{scheme}', [CommissionSchemeController::class, 'show']);
+            Route::get('commissions/schemes/{scheme}/rules', [CommissionRuleController::class, 'index']);
+            Route::get('commissions/assignments', [StaffCommissionAssignmentController::class, 'index']);
+            Route::get('commissions/periods', [CommissionPayoutController::class, 'index']);
+        });
+
+        Route::middleware(['tenant.permission:commissions.manage', 'subscription.module:staff'])->group(function (): void {
+            Route::post('commissions/schemes', [CommissionSchemeController::class, 'store']);
+            Route::match(['put', 'patch'], 'commissions/schemes/{scheme}', [CommissionSchemeController::class, 'update']);
+            Route::delete('commissions/schemes/{scheme}', [CommissionSchemeController::class, 'destroy']);
+            Route::post('commissions/schemes/{scheme}/rules', [CommissionRuleController::class, 'store']);
+            Route::match(['put', 'patch'], 'commissions/schemes/{scheme}/rules/{rule}', [CommissionRuleController::class, 'update']);
+            Route::delete('commissions/schemes/{scheme}/rules/{rule}', [CommissionRuleController::class, 'destroy']);
+            Route::post('commissions/assignments', [StaffCommissionAssignmentController::class, 'store']);
+            Route::match(['put', 'patch'], 'commissions/assignments/{assignment}', [StaffCommissionAssignmentController::class, 'update']);
+            Route::delete('commissions/assignments/{assignment}', [StaffCommissionAssignmentController::class, 'destroy']);
+            Route::post('commissions/periods', [CommissionPayoutController::class, 'store']);
+        });
+
+        Route::middleware(['tenant.permission:commissions.approve', 'subscription.module:staff'])->group(function (): void {
+            Route::post('commissions/periods/{period}/lock', [CommissionPayoutController::class, 'lock']);
+        });
+
+        Route::middleware(['tenant.permission:payroll.view', 'subscription.module:staff'])->group(function (): void {
+            Route::get('payroll/pay-runs', [PayrollController::class, 'index']);
+            Route::get('payroll/pay-runs/{payRun}', [PayrollController::class, 'show']);
+            Route::get('payroll/pay-runs/{payRun}/export.csv', [PayrollController::class, 'exportCsv']);
+        });
+        Route::middleware(['tenant.permission:payroll.manage', 'subscription.module:staff'])->group(function (): void {
+            Route::post('payroll/pay-runs', [PayrollController::class, 'store']);
+            Route::post('payroll/pay-runs/{payRun}/calculate', [PayrollController::class, 'calculate']);
+            Route::post('payroll/pay-runs/{payRun}/mark-paid', [PayrollController::class, 'markPaid']);
+        });
+        Route::middleware(['tenant.permission:payroll.approve', 'subscription.module:staff'])->group(function (): void {
+            Route::post('payroll/pay-runs/{payRun}/approve', [PayrollController::class, 'approve']);
+        });
+
+        Route::middleware(['tenant.permission:attendance.view|attendance.punch', 'subscription.module:staff'])->group(function (): void {
+            Route::get('attendance/punches', [AttendanceController::class, 'punches']);
+            Route::get('attendance/leave-requests', [AttendanceController::class, 'leaves']);
+        });
+        Route::middleware(['tenant.permission:attendance.punch|attendance.manage', 'subscription.module:staff'])->group(function (): void {
+            Route::post('attendance/punch', [AttendanceController::class, 'punch']);
+            Route::post('attendance/leave-requests', [AttendanceController::class, 'requestLeave']);
+        });
+        Route::middleware(['tenant.permission:leave.approve', 'subscription.module:staff'])->group(function (): void {
+            Route::post('attendance/leave-requests/{leaveRequest}/decide', [AttendanceController::class, 'decideLeave']);
+        });
+        Route::middleware(['tenant.permission:attendance.manage', 'subscription.module:staff'])->group(function (): void {
+            Route::post('attendance/shifts/generate', [AttendanceController::class, 'generateShifts']);
+        });
+
+        // Marketing
+        Route::middleware(['tenant.permission:marketing.view', 'subscription.module:marketing|customers'])->group(function (): void {
+            Route::get('marketing/segments', [MarketingSegmentController::class, 'index']);
+            Route::get('marketing/segments/{segment}/preview', [MarketingSegmentController::class, 'preview']);
+            Route::get('marketing/campaigns', [MarketingCampaignController::class, 'index']);
+            Route::get('marketing/campaigns/{campaign}', [MarketingCampaignController::class, 'show']);
+        });
+        Route::middleware(['tenant.permission:marketing.manage', 'subscription.module:marketing|customers'])->group(function (): void {
+            Route::post('marketing/segments', [MarketingSegmentController::class, 'store']);
+            Route::match(['put', 'patch'], 'marketing/segments/{segment}', [MarketingSegmentController::class, 'update']);
+            Route::delete('marketing/segments/{segment}', [MarketingSegmentController::class, 'destroy']);
+            Route::post('marketing/campaigns', [MarketingCampaignController::class, 'store']);
+        });
+        Route::middleware(['tenant.permission:marketing.send', 'subscription.module:marketing|customers'])->group(function (): void {
+            Route::post('marketing/campaigns/{campaign}/send', [MarketingCampaignController::class, 'send']);
+        });
+
+        Route::middleware(['tenant.permission:reviews.view', 'subscription.module:marketing|customers'])->group(function (): void {
+            Route::get('reviews/requests', [ReviewController::class, 'index']);
+            Route::get('reviews/ratings', [ReviewController::class, 'ratings']);
+            Route::get('reviews/schedule', [ReviewController::class, 'schedule']);
+            Route::get('reviews/settings', [ReviewController::class, 'settings']);
+        });
+        Route::middleware(['tenant.permission:reviews.manage', 'subscription.module:marketing|customers'])->group(function (): void {
+            Route::put('reviews/settings', [ReviewController::class, 'updateSettings']);
+            Route::post('reviews/send', [ReviewController::class, 'send']);
+            Route::post('reviews/requests/{reviewRequest}/rate', [ReviewController::class, 'rate']);
+        });
+
+        // Packages & gift cards
+        Route::middleware(['tenant.permission:packages.view', 'subscription.module:customers'])->group(function (): void {
+            Route::get('packages', [PackageController::class, 'index']);
+            Route::get('packages/{package}', [PackageController::class, 'show']);
+            Route::get('customer-packages', [CustomerPackageController::class, 'index']);
+            Route::get('customers/{customer}/packages', [CustomerPackageController::class, 'forCustomer']);
+        });
+        Route::middleware(['tenant.permission:packages.manage', 'subscription.module:customers'])->group(function (): void {
+            Route::post('packages', [PackageController::class, 'store']);
+            Route::match(['put', 'patch'], 'packages/{package}', [PackageController::class, 'update']);
+            Route::delete('packages/{package}', [PackageController::class, 'destroy']);
+        });
+        Route::middleware(['tenant.permission:packages.sell', 'subscription.module:customers'])->group(function (): void {
+            Route::post('packages/{package}/sell', [PackageController::class, 'sell']);
+        });
+        Route::middleware(['tenant.permission:packages.redeem', 'subscription.module:customers'])->group(function (): void {
+            Route::post('customer-packages/{customerPackage}/redeem', [CustomerPackageController::class, 'redeem']);
+        });
+
+        Route::middleware(['tenant.permission:giftcards.view', 'subscription.module:customers'])->group(function (): void {
+            Route::get('gift-cards', [GiftCardController::class, 'index']);
+            Route::get('gift-cards/lookup', [GiftCardController::class, 'lookup']);
+            Route::get('gift-cards/{giftCard}', [GiftCardController::class, 'show']);
+        });
+        Route::middleware(['tenant.permission:giftcards.sell', 'subscription.module:customers'])->group(function (): void {
+            Route::post('gift-cards', [GiftCardController::class, 'store']);
+        });
+        Route::middleware(['tenant.permission:giftcards.redeem', 'subscription.module:customers'])->group(function (): void {
+            Route::post('gift-cards/{giftCard}/redeem', [GiftCardController::class, 'redeem']);
+        });
+        Route::middleware(['tenant.permission:giftcards.adjust', 'subscription.module:customers'])->group(function (): void {
+            Route::post('gift-cards/{giftCard}/adjust', [GiftCardController::class, 'adjust']);
+        });
+
+        // Waitlist, no-show, pricing
+        Route::middleware(['tenant.permission:waitlist.view', 'subscription.module:appointments'])->group(function (): void {
+            Route::get('waitlist', [WaitlistController::class, 'index']);
+        });
+        Route::middleware(['tenant.permission:waitlist.manage', 'subscription.module:appointments'])->group(function (): void {
+            Route::post('waitlist', [WaitlistController::class, 'store']);
+            Route::delete('waitlist/{waitlistEntry}', [WaitlistController::class, 'destroy']);
+            Route::post('waitlist/{waitlistEntry}/offers', [WaitlistController::class, 'createOffer']);
+            Route::post('waitlist/offers/{waitlistOffer}/accept', [WaitlistController::class, 'acceptOffer']);
+            Route::post('waitlist/offers/{waitlistOffer}/decline', [WaitlistController::class, 'declineOffer']);
+            Route::post('waitlist/offers/from-cancellation', [WaitlistController::class, 'fromCancellation']);
+        });
+
+        Route::middleware(['tenant.permission:payments.policy.manage', 'subscription.module:appointments'])->group(function (): void {
+            Route::get('no-show-policy', [NoShowPolicyController::class, 'show']);
+            Route::put('no-show-policy', [NoShowPolicyController::class, 'update']);
+            Route::patch('no-show-policy', [NoShowPolicyController::class, 'update']);
+            Route::post('no-show-policy/evaluate', [NoShowPolicyController::class, 'evaluate']);
+        });
+        Route::middleware(['tenant.permission:payments.charge', 'subscription.module:appointments'])->group(function (): void {
+            Route::post('appointments/{appointment}/deposit/paid', [NoShowPolicyController::class, 'markDepositPaid']);
+        });
+        Route::middleware(['tenant.permission:payments.waive', 'subscription.module:appointments'])->group(function (): void {
+            Route::post('appointments/{appointment}/deposit/waive', [NoShowPolicyController::class, 'waiveDeposit']);
+        });
+        Route::middleware(['tenant.permission:payments.refund', 'subscription.module:appointments'])->group(function (): void {
+            Route::post('appointments/{appointment}/deposit/refund', [NoShowPolicyController::class, 'refundDeposit']);
+        });
+        Route::middleware(['tenant.permission:payments.charge|payments.waive', 'subscription.module:appointments'])->group(function (): void {
+            Route::post('appointments/{appointment}/no-show-fee', [NoShowPolicyController::class, 'markNoShowFee']);
+        });
+
+        Route::middleware(['tenant.permission:pricing_rules.view', 'subscription.module:appointments'])->group(function (): void {
+            Route::get('pricing-rules', [PricingRuleController::class, 'index']);
+            Route::get('pricing/resolve', [PricingRuleController::class, 'resolve']);
+        });
+        Route::middleware(['tenant.permission:pricing_rules.manage', 'subscription.module:appointments'])->group(function (): void {
+            Route::post('pricing-rules', [PricingRuleController::class, 'store']);
+            Route::match(['put', 'patch'], 'pricing-rules/{pricingRule}', [PricingRuleController::class, 'update']);
+            Route::delete('pricing-rules/{pricingRule}', [PricingRuleController::class, 'destroy']);
         });
 
         Route::middleware(['tenant.permission:staff.view', 'subscription.module:staff'])->group(function (): void {

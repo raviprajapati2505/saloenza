@@ -62,40 +62,17 @@ class AdminPlatformSettingsApiTest extends TestCase
         $this->assertSame($admin->id, PlatformSetting::query()->where('group', 'salon_referrals')->where('key', 'commission_rate')->value('updated_by'));
     }
 
-    public function test_super_admin_can_save_email_settings_with_null_optional_fields(): void
+    public function test_super_admin_cannot_save_removed_email_settings_group(): void
     {
         $admin = $this->createSystemAdmin();
         Sanctum::actingAs($admin);
 
         $this->putJson('/api/v1/admin/platform-settings/email', [
             'settings' => [
-                'use_custom' => false,
                 'from_name' => 'Saloenza',
                 'from_email' => 'hello@glowsuite.com',
-                'reply_to' => null,
-                'smtp_host' => '',
-                'smtp_port' => 587,
-                'smtp_encryption' => 'tls',
-                'smtp_username' => '',
-                'smtp_password' => '',
             ],
-        ])
-            ->assertOk()
-            ->assertJsonPath('data.settings.reply_to.value', '');
-
-        $storedReplyTo = PlatformSetting::query()
-            ->where('group', 'email')
-            ->where('key', 'reply_to')
-            ->first()
-            ?->value;
-
-        $this->assertSame('', $storedReplyTo);
-        $this->assertNull(
-            PlatformSetting::query()
-                ->where('group', 'email')
-                ->where('key', 'smtp_password')
-                ->first(),
-        );
+        ])->assertStatus(422);
     }
 
     public function test_non_super_admin_cannot_access_platform_settings(): void

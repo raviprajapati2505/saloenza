@@ -18,6 +18,8 @@ const ALL_MODULES = [
   'catalog',
   'roles',
   'settings',
+  'queue',
+  'marketing',
 ]
 
 function makeAuth(permissions = [], overrides = {}) {
@@ -65,15 +67,25 @@ describe('navigation permissions', () => {
 
     const byTitle = Object.fromEntries(NAV_GROUPS.map((group) => [group.title, group.items.map((item) => item.label)]))
     expect(byTitle.Organization).toEqual(['Branch Management'])
-    expect(byTitle['People & Access']).toEqual(['Staff', 'Roles', 'Assign Permissions'])
+    expect(byTitle['People & Access']).toEqual(['Staff', 'Roles', 'Assign Permissions', 'Attendance', 'Payroll'])
     expect(byTitle.Operations).toEqual([
       'Appointments',
+      'Import appointments',
       'Live queue',
+      'Waitlist',
       'Booking links',
       'My earnings',
+      'Commissions',
       'POS',
       'Customers',
+      'Retention',
+      'Packages',
+      'Gift cards',
       'Inventory',
+      'Marketing',
+      'Reviews',
+      'No-show policy',
+      'Pricing rules',
     ])
     expect(NAV_GROUPS.some((group) => group.title === 'System')).toBe(false)
   })
@@ -123,6 +135,7 @@ describe('navigation permissions', () => {
     expect(labels).toContain('Staff')
     expect(labels).toContain('Branch Management')
     expect(labels).not.toContain('Billing')
+    expect(labels).not.toContain('Import appointments')
   })
 
   it('hides tenant branch management for platform admins', () => {

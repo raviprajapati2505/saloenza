@@ -53,8 +53,11 @@ async function apiGet(url, params, token) {
 
 function normalizePhoneForForm(phone) {
   if (!phone) return ''
-  const digits = String(phone).replace(/\D/g, '')
-  return digits.length > 10 ? digits.slice(-10) : digits
+  const raw = String(phone).trim()
+  if (raw.startsWith('+')) return raw
+  const digits = raw.replace(/\D/g, '')
+  if (!digits) return ''
+  return `+${digits}`
 }
 
 export function onboardingResponseToFormValues(data) {
@@ -91,6 +94,7 @@ export function onboardingResponseToFormValues(data) {
       last_name: user.lastname ?? '',
       email: user.email ?? '',
       phone: normalizePhoneForForm(user.phone),
+      whatsapp: normalizePhoneForForm(user.whatsapp),
       password: '',
       active: user.is_active ?? true,
     },
@@ -141,6 +145,7 @@ function buildOnboardingPayload(payload) {
       lastname: payload.owner?.last_name,
       email: payload.owner?.email,
       phone: payload.owner?.phone,
+      whatsapp: payload.owner?.whatsapp || null,
       password: payload.owner?.password || undefined,
       password_confirmation: payload.owner?.password || undefined,
       is_active: payload.owner?.active ?? true,

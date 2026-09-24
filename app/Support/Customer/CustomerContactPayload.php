@@ -12,9 +12,11 @@ final class CustomerContactPayload
      *     id: int|null,
      *     name: string|null,
      *     phone: string|null,
+     *     whatsapp: string|null,
      *     email: string|null,
      *     can_view_contact: bool,
      *     has_phone: bool,
+     *     has_whatsapp: bool,
      *     has_email: bool
      * }
      */
@@ -25,9 +27,11 @@ final class CustomerContactPayload
                 'id' => null,
                 'name' => null,
                 'phone' => null,
+                'whatsapp' => null,
                 'email' => null,
                 'can_view_contact' => false,
                 'has_phone' => false,
+                'has_whatsapp' => false,
                 'has_email' => false,
             ];
         }
@@ -38,9 +42,11 @@ final class CustomerContactPayload
             'id' => (int) $customer->id,
             'name' => $customer->name,
             'phone' => $canView && filled($customer->phone) ? (string) $customer->phone : null,
+            'whatsapp' => $canView && filled($customer->whatsapp) ? (string) $customer->whatsapp : null,
             'email' => $canView && filled($customer->email) ? (string) $customer->email : null,
             'can_view_contact' => $canView,
             'has_phone' => filled($customer->phone),
+            'has_whatsapp' => filled($customer->whatsapp),
             'has_email' => filled($customer->email),
         ];
     }

@@ -162,6 +162,7 @@ class StaffController extends Controller
             'lastname' => $lastname,
             'email' => $request->validated('email'),
             'phone' => $request->validated('phone'),
+            'whatsapp' => $request->validated('whatsapp'),
             'password' => $request->validated('password'),
             'is_active' => (bool) $request->validated('is_active'),
             'role_id' => (int) $request->validated('role_id'),
@@ -232,6 +233,10 @@ class StaffController extends Controller
             'commission_rate' => $request->validated('commission_rate'),
             'per_month_salary' => $request->validated('per_month_salary'),
         ];
+
+        if ($request->exists('whatsapp')) {
+            $attributes['whatsapp'] = $request->validated('whatsapp');
+        }
 
         foreach (['notes', 'joined_at', 'weekly_schedule'] as $optionalField) {
             if ($request->exists($optionalField)) {

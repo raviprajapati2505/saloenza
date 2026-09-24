@@ -3,18 +3,15 @@
 namespace App\Services\Notifications;
 
 use App\Contracts\Notifications\OtpNotificationServiceInterface;
-use App\Contracts\Notifications\SmsOtpSenderInterface;
 use App\Models\Saloon;
 use App\Services\Tenant\TenantMailDeliveryService;
-use App\Services\Tenant\TenantSmsDeliveryService;
 use InvalidArgumentException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class OtpNotificationService implements OtpNotificationServiceInterface
 {
     public function __construct(
-        private readonly SmsOtpSenderInterface $smsSender,
         private readonly TenantMailDeliveryService $tenantMailDeliveryService,
-        private readonly TenantSmsDeliveryService $tenantSmsDeliveryService,
     ) {}
 
     public function sendPasswordResetOtp(
@@ -37,9 +34,11 @@ class OtpNotificationService implements OtpNotificationServiceInterface
                 'Password reset OTP',
                 $message,
             ),
-            'sms' => $salon !== null
-                ? $this->tenantSmsDeliveryService->send($salon, $destination, $message)
-                : $this->smsSender->send($destination, $message),
+            // TODO: WhatsApp — send password-reset OTP to phone when WhatsApp is integrated.
+            'sms' => throw new HttpException(
+                422,
+                'SMS verification is no longer available. Please reset your password using your email address.',
+            ),
             default => throw new InvalidArgumentException('Unsupported OTP channel.'),
         };
     }

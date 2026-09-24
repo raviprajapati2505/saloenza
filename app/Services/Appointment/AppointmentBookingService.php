@@ -9,6 +9,8 @@ use App\Models\SalonServiceProduct;
 use App\Models\User;
 use App\Services\Inventory\BranchStockService;
 use App\Services\Inventory\RetailProductService;
+use App\Services\NoShow\NoShowPolicyService;
+use App\Services\Pricing\PricingRuleService;
 use App\Support\Appointment\AppointmentPayment;
 use App\Support\Appointment\AppointmentStatus;
 use App\Support\Branch\BranchScope;
@@ -26,6 +28,8 @@ class AppointmentBookingService
         private readonly AppointmentPaymentService $payments,
         private readonly BranchStockService $stock,
         private readonly RetailProductService $retail,
+        private readonly PricingRuleService $pricingRules,
+        private readonly NoShowPolicyService $noShowPolicies,
     ) {}
 
     /**
@@ -36,8 +40,16 @@ class AppointmentBookingService
         return DB::transaction(function () use ($actor, $payload): Appointment {
             $saloonId = (int) $payload['saloon_id'];
             $branchId = isset($payload['branch_id']) ? (int) $payload['branch_id'] : null;
+            $slotAt = filled($payload['starts_at'] ?? null) ? Carbon::parse($payload['starts_at']) : null;
+            $channel = $this->resolveBookingSource($payload);
 
-            $services = $this->normalizeServices($payload['services'] ?? [], $saloonId, $branchId);
+            $services = $this->normalizeServices(
+                $payload['services'] ?? [],
+                $saloonId,
+                $branchId,
+                $slotAt,
+                $channel,
+            );
             $products = $this->normalizeProducts($payload['products'] ?? [], $saloonId, $branchId);
             $this->assertHasLines($services, $products);
 
@@ -45,7 +57,13 @@ class AppointmentBookingService
 
             $this->assertStaffBelongToBranch($services, $branchId);
             $this->assertProductStaffBelongToBranch($products, $branchId);
-            $this->availability->assertAvailable($timeline['lines']);
+
+            // Historical imports of finished visits must not be rejected by today's
+            // rota. Live bookings still go through the normal availability check.
+            if (empty($payload['skip_staff_availability'])) {
+                $this->availability->assertAvailable($timeline['lines']);
+            }
+            unset($payload['skip_staff_availability']);
 
             $status = filled($payload['status'] ?? null)
                 ? (string) $payload['status']
@@ -59,6 +77,11 @@ class AppointmentBookingService
             $discount = (float) ($payload['discount'] ?? 0);
             $grandTotal = max($price - $discount, 0);
             $primary = $services[0] ?? null;
+            $depositFields = $this->noShowPolicies->depositFieldsForAppointment(
+                $saloonId,
+                isset($payload['customer_id']) ? (int) $payload['customer_id'] : null,
+                $servicesTotal,
+            );
 
             $appointment = Appointment::query()->create([
                 'saloon_id' => $saloonId,
@@ -71,7 +94,7 @@ class AppointmentBookingService
                 'ends_at' => $timeline['ends_at'],
                 'status' => $status,
                 'type' => $type,
-                'booking_source' => $this->resolveBookingSource($payload),
+                'booking_source' => $channel,
                 'price' => $price,
                 'services_total' => $servicesTotal,
                 'products_total' => $productsTotal,
@@ -79,6 +102,7 @@ class AppointmentBookingService
                 'grand_total' => $grandTotal,
                 'notes' => $payload['notes'] ?? null,
                 'created_by' => $actor->id,
+                ...$depositFields,
                 ...$this->payments->fieldsForCreate($payload, $grandTotal),
             ]);
 
@@ -104,7 +128,15 @@ class AppointmentBookingService
                 ? ($payload['branch_id'] !== null ? (int) $payload['branch_id'] : null)
                 : ($appointment->branch_id !== null ? (int) $appointment->branch_id : null);
 
-            $services = $this->normalizeServices($payload['services'] ?? [], $saloonId, $branchId);
+            $services = $this->normalizeServices(
+                $payload['services'] ?? [],
+                $saloonId,
+                $branchId,
+                filled($payload['starts_at'] ?? null)
+                    ? Carbon::parse($payload['starts_at'])
+                    : ($appointment->starts_at ? Carbon::parse($appointment->starts_at) : null),
+                (string) ($payload['booking_source'] ?? $appointment->booking_source ?? Appointment::SOURCE_INTERNAL),
+            );
             $services = $this->preserveExistingLineTimes($appointment, $services);
             $products = $this->normalizeProducts($payload['products'] ?? [], $saloonId, $branchId);
             $this->assertHasLines($services, $products);
@@ -147,6 +179,13 @@ class AppointmentBookingService
                 'grand_total' => $grandTotal,
                 'notes' => $payload['notes'] ?? null,
                 ...$paymentFields,
+                ...$this->noShowFeeFieldsOnStatusChange(
+                    $appointment,
+                    (string) $previousStatus,
+                    $nextStatus,
+                    $servicesTotal,
+                    $grandTotal,
+                ),
             ]);
 
             if ($paymentFields === [] && $appointment->payment_status !== AppointmentPayment::STATUS_REFUNDED) {
@@ -392,8 +431,13 @@ class AppointmentBookingService
      * @param  list<array<string, mixed>>  $services
      * @return list<array<string, mixed>>
      */
-    private function normalizeServices(array $services, int $saloonId, ?int $branchId = null): array
-    {
+    private function normalizeServices(
+        array $services,
+        int $saloonId,
+        ?int $branchId = null,
+        ?Carbon $slotAt = null,
+        string $channel = Appointment::SOURCE_INTERNAL,
+    ): array {
         $normalized = [];
 
         foreach (array_values($services) as $index => $row) {
@@ -419,9 +463,32 @@ class AppointmentBookingService
                 ]);
             }
 
-            $price = array_key_exists('price', $row) && $row['price'] !== null && $row['price'] !== ''
-                ? (float) $row['price']
-                : (float) $offering->price;
+            $listPrice = (float) $offering->price;
+            $price = $listPrice;
+            $appliedRuleId = null;
+
+            $hasExplicitPrice = array_key_exists('price', $row) && $row['price'] !== null && $row['price'] !== '';
+
+            if ($hasExplicitPrice) {
+                $price = (float) $row['price'];
+                $listPrice = array_key_exists('list_price', $row) && $row['list_price'] !== null && $row['list_price'] !== ''
+                    ? (float) $row['list_price']
+                    : $listPrice;
+                $appliedRuleId = isset($row['applied_pricing_rule_id']) ? (int) $row['applied_pricing_rule_id'] : null;
+            } else {
+                $resolved = $this->pricingRules->resolvePrice(
+                    $saloonId,
+                    $branchId,
+                    $serviceId,
+                    $slotAt ?? now(),
+                    $channel,
+                    $staffId,
+                    $listPrice,
+                );
+                $listPrice = $resolved['list_price'];
+                $price = $resolved['final_price'];
+                $appliedRuleId = $resolved['pricing_rule_id'];
+            }
 
             $duration = array_key_exists('duration_minutes', $row) && $row['duration_minutes']
                 ? (int) $row['duration_minutes']
@@ -441,6 +508,8 @@ class AppointmentBookingService
                 'staff_id' => $staffId,
                 'is_staff_locked' => $isStaffLocked,
                 'price' => $price,
+                'list_price' => $listPrice,
+                'applied_pricing_rule_id' => $appliedRuleId,
                 'quantity' => max(1, (int) ($row['quantity'] ?? 1)),
                 'duration_minutes' => max(1, $duration),
                 'sort_order' => $index,
@@ -719,6 +788,8 @@ class AppointmentBookingService
                 'staff_id' => $line['staff_id'],
                 'is_staff_locked' => (bool) ($line['is_staff_locked'] ?? false),
                 'price' => $line['price'],
+                'list_price' => $line['list_price'] ?? $line['price'],
+                'applied_pricing_rule_id' => $line['applied_pricing_rule_id'] ?? null,
                 'quantity' => max(1, (int) ($line['quantity'] ?? 1)),
                 'duration_minutes' => $line['duration_minutes'],
                 'starts_at' => $line['starts_at'],
@@ -803,6 +874,34 @@ class AppointmentBookingService
             'appointment',
             (int) $appointment->id,
         );
+    }
+
+    /**
+     * When an appointment is marked no-show, stage the policy fee as pending
+     * so staff can charge or waive it from the appointment panel.
+     *
+     * @return array<string, mixed>
+     */
+    private function noShowFeeFieldsOnStatusChange(
+        Appointment $appointment,
+        string $previousStatus,
+        string $nextStatus,
+        float $servicesTotal,
+        float $grandTotal,
+    ): array {
+        if ($nextStatus !== AppointmentStatus::NO_SHOW || $previousStatus === AppointmentStatus::NO_SHOW) {
+            return [];
+        }
+
+        $existingFeeStatus = (string) ($appointment->no_show_fee_status ?? 'n/a');
+        if (in_array($existingFeeStatus, ['charged', 'waived'], true)) {
+            return [];
+        }
+
+        $appointment->setAttribute('services_total', $servicesTotal);
+        $appointment->setAttribute('grand_total', $grandTotal);
+
+        return $this->noShowPolicies->feeFieldsForNoShow($appointment);
     }
 
     /**

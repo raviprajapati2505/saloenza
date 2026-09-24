@@ -6,6 +6,7 @@ import PageHeader from '../components/ui/PageHeader.jsx'
 import BaseButton from '../components/ui/BaseButton.jsx'
 import BaseInput from '../components/ui/BaseInput.jsx'
 import BaseBadge from '../components/ui/BaseBadge.jsx'
+import PhoneWithCountryInput from '../components/inputs/PhoneWithCountryInput.jsx'
 import StaffCard from '../components/staff/StaffCard.jsx'
 // Skills Matrix is UI-only (no skills table/API) — hidden for now.
 // import SkillsMatrix from '../components/staff/SkillsMatrix.jsx'
@@ -189,6 +190,7 @@ function StaffFormModal({ open, staff, roles, saloons, branches, isSystemAdmin, 
     lastname: '',
     email: '',
     phone: '',
+    whatsapp: '',
     password: '',
     password_confirmation: '',
     role_id: '',
@@ -213,6 +215,7 @@ function StaffFormModal({ open, staff, roles, saloons, branches, isSystemAdmin, 
         lastname: staff?.lastname || staff?.name?.split(' ').slice(1).join(' ') || '',
         email: staff?.email || '',
         phone: staff?.phone || '',
+        whatsapp: staff?.whatsapp || '',
         password: '',
         password_confirmation: '',
         role_id: staff?.role_id ? String(staff.role_id) : (filteredRoles[0]?.id ? String(filteredRoles[0].id) : ''),
@@ -248,6 +251,7 @@ function StaffFormModal({ open, staff, roles, saloons, branches, isSystemAdmin, 
         lastname: form.lastname.trim(),
         email: form.email.trim(),
         phone: form.phone.trim(),
+        whatsapp: form.whatsapp.trim() || null,
         role_id: Number(form.role_id),
         is_active: Boolean(form.is_active),
         notes: form.notes.trim() || null,
@@ -302,7 +306,23 @@ function StaffFormModal({ open, staff, roles, saloons, branches, isSystemAdmin, 
             <BaseInput label="Last Name" modelValue={form.lastname} onUpdateModelValue={v => setForm({ ...form, lastname: v })} error={errors.lastname} placeholder="Enter last name" />
           </div>
           <BaseInput label="Email" modelValue={form.email} onUpdateModelValue={v => setForm({ ...form, email: v })} error={errors.email} placeholder="name@example.com" />
-          <BaseInput label="Phone" modelValue={form.phone} onUpdateModelValue={v => setForm({ ...form, phone: v })} error={errors.phone} placeholder="+91 98765 43210" />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <PhoneWithCountryInput
+              label="Phone"
+              required
+              value={form.phone}
+              onChange={(value) => setForm({ ...form, phone: value })}
+              error={errors.phone}
+            />
+            <PhoneWithCountryInput
+              label="WhatsApp"
+              optional
+              value={form.whatsapp}
+              onChange={(value) => setForm({ ...form, whatsapp: value })}
+              error={errors.whatsapp}
+              placeholder="WhatsApp number"
+            />
+          </div>
           {isSystemAdmin && (
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">Salon</label>

@@ -30,6 +30,11 @@ final class AppointmentPayment
 
     public const METHOD_OTHER = 'other';
 
+    /** Tender types used by package / gift-card redemptions (not in POS METHODS yet). */
+    public const METHOD_PACKAGE = 'package';
+
+    public const METHOD_GIFT_CARD = 'gift_card';
+
     /** @var list<string> */
     public const METHODS = [
         self::METHOD_CASH,

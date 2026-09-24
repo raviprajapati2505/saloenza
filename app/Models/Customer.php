@@ -14,8 +14,10 @@ class Customer extends Model
         'name',
         'email',
         'phone',
+        'whatsapp',
         'notes',
         'is_active',
+        'require_prepayment',
         'created_by',
         'birthday',
         'anniversary',
@@ -27,6 +29,7 @@ class Customer extends Model
     {
         return [
             'is_active' => 'boolean',
+            'require_prepayment' => 'boolean',
             'birthday' => 'date',
             'anniversary' => 'date',
             'last_birthday_wish_on' => 'date',
@@ -50,10 +53,25 @@ class Customer extends Model
         return $this->hasMany(Appointment::class);
     }
 
+    public function valueStats(): HasMany
+    {
+        return $this->hasMany(CustomerValueStat::class);
+    }
+
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(CustomerTag::class, 'customer_customer_tag')
             ->withTimestamps();
+    }
+
+    public function customerPackages(): HasMany
+    {
+        return $this->hasMany(CustomerPackage::class);
+    }
+
+    public function purchasedGiftCards(): HasMany
+    {
+        return $this->hasMany(GiftCard::class, 'purchaser_customer_id');
     }
 
     public function scopeForSaloon(Builder $query, int $saloonId): Builder
