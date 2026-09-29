@@ -2,9 +2,11 @@
 
 namespace App\Actions\Auth;
 
+use App\Models\Saloon;
 use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Support\AuthIdentifier;
+use App\Support\Tenancy\SalonHostResolver;
 use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -34,6 +36,8 @@ class LoginUserAction
             throw new HttpException(422, 'Your account has been deactivated.');
         }
 
+        $this->ensureUserBelongsToSalonHost($user);
+
         $user->loadMissing(['saloon', 'role.permissions', 'affiliatePartner']);
 
         $token = $this->userRepository->createToken($user, $deviceName !== '' ? $deviceName : 'web');
@@ -43,6 +47,23 @@ class LoginUserAction
             'token' => $token,
             'should_onboard' => $user->shouldOnboard(),
         ];
+    }
+
+    private function ensureUserBelongsToSalonHost(User $user): void
+    {
+        $saloon = request()->attributes->get(SalonHostResolver::REQUEST_ATTRIBUTE);
+
+        if (! $saloon instanceof Saloon) {
+            return;
+        }
+
+        if ($user->grantsAllPermissions()) {
+            return;
+        }
+
+        if ((int) $user->saloon_id !== (int) $saloon->id) {
+            throw new HttpException(403, 'This account does not belong to this salon.');
+        }
     }
 
     private function resolveUser(string $login): ?User

@@ -12,6 +12,7 @@ use App\Services\Affiliate\AffiliateCommissionService;
 use App\Services\Saloon\SalonReferralService;
 use App\Support\Role\RoleCodes;
 use App\Support\Subscription\SubscriptionEntitlements;
+use App\Support\Tenancy\SalonDomain;
 use Illuminate\Support\Facades\DB;
 
 class RegisterSalonOwnerAction
@@ -34,6 +35,7 @@ class RegisterSalonOwnerAction
         return DB::transaction(function () use ($payload): array {
             $saloon = $this->saloonRepository->create([
                 'name' => trim((string) $payload['salon_name']),
+                'domain' => SalonDomain::normalize($payload['domain'] ?? null),
                 'is_active' => true,
                 'activation_status' => Saloon::ACTIVATION_ACTIVE,
             ]);

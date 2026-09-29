@@ -30,6 +30,7 @@ const STEPS = [
 const STEP_FIELD_PATHS = {
   salon: [
     'salon.business_name',
+    'salon.domain',
     'salon.payment_type',
     'salon.amount',
     'salon.transaction_id',

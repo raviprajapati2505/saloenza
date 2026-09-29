@@ -58,6 +58,7 @@ class AdminOnboardingApiTest extends TestCase
         $response = $this->postJson('/api/v1/admin/onboarding', [
             'saloon' => [
                 'business_name' => 'Glow Studio',
+                'domain' => 'glowstudio',
                 'payment_type' => 'online',
                 'payment_amount' => 999.00,
                 'transaction_id' => 'TXN-001',
@@ -98,6 +99,7 @@ class AdminOnboardingApiTest extends TestCase
         $response->assertCreated();
         $response->assertJsonPath('message', 'Salon onboarded successfully.');
         $response->assertJsonPath('data.saloon.business_name', 'Glow Studio');
+        $response->assertJsonPath('data.saloon.domain', 'glowstudio');
         $response->assertJsonPath('data.branch.branch_name', 'Main Branch');
         $response->assertJsonPath('data.user.firstname', 'Ravi');
         $response->assertJsonPath('data.user.role_id', $saloonOwnerRole->id);
@@ -105,6 +107,7 @@ class AdminOnboardingApiTest extends TestCase
 
         $this->assertDatabaseHas('saloons', [
             'name' => 'Glow Studio',
+            'domain' => 'glowstudio',
         ]);
 
         $referralCode = (string) $response->json('data.saloon.referral_code');
@@ -152,6 +155,7 @@ class AdminOnboardingApiTest extends TestCase
         $response = $this->postJson('/api/v1/admin/onboarding', [
             'saloon' => [
                 'business_name' => 'Custom Cuts',
+                'domain' => 'customcuts',
                 'payment_type' => 'Monthly',
                 'payment_amount' => 499.00,
                 'transaction_id' => 'TXN-CUSTOM-001',
@@ -266,6 +270,7 @@ class AdminOnboardingApiTest extends TestCase
         $response = $this->putJson("/api/v1/admin/onboarding/{$saloon->id}", [
             'saloon' => [
                 'business_name' => 'Updated Salon',
+                'domain' => 'updatedsalon',
                 'payment_type' => 'Yearly',
                 'payment_amount' => 1200,
                 'transaction_id' => 'TXN-UPDATED',
@@ -329,6 +334,7 @@ class AdminOnboardingApiTest extends TestCase
         $response = $this->putJson("/api/v1/admin/onboarding/{$saloon->id}", [
             'saloon' => [
                 'business_name' => 'Same Email Salon',
+                'domain' => 'sameemailsalon',
                 'payment_type' => 'Monthly',
                 'payment_amount' => 500,
                 'transaction_id' => 'TXN-SAME',

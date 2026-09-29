@@ -1,6 +1,7 @@
 /**
  * @typedef {Object} SalonPayload
  * @property {string} business_name
+ * @property {string} domain
  * @property {string} payment_type - Monthly | Quarterly | Yearly | One-time
  * @property {number} amount
  * @property {string} transaction_id
@@ -51,6 +52,7 @@
  * @typedef {Object} SalonResult
  * @property {number|string} id
  * @property {string} business_name
+ * @property {string} domain
  */
 
 /**

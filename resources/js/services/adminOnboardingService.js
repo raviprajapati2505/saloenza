@@ -70,6 +70,7 @@ export function onboardingResponseToFormValues(data) {
     trial_days: Number(data?.subscription?.plan?.trial_days ?? 15),
     salon: {
       business_name: data?.saloon?.business_name ?? '',
+      domain: data?.saloon?.domain ?? '',
       payment_type: data?.saloon?.payment_type ?? undefined,
       amount: data?.saloon?.payment_amount ?? '',
       transaction_id: data?.saloon?.transaction_id ?? '',
@@ -122,6 +123,7 @@ function buildOnboardingPayload(payload) {
       : null,
     saloon: {
       business_name: payload.salon?.business_name,
+      domain: payload.salon?.domain,
       payment_type: payload.salon?.payment_type,
       payment_amount: Number(payload.salon?.amount),
       transaction_id: payload.salon?.transaction_id,

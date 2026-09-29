@@ -1,8 +1,16 @@
 import { z } from 'zod'
 import { isValidE164 } from '../../../lib/phoneNumber.js'
+import { RESERVED_SALON_DOMAINS } from '../../../lib/salonHost.js'
 
 export const salonSchema = z.object({
   business_name: z.string().min(1, 'Business name is required'),
+  domain: z
+    .string()
+    .trim()
+    .min(3, 'Workspace domain must be at least 3 characters')
+    .max(63, 'Workspace domain must be 63 characters or fewer')
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Use lowercase letters, numbers, and hyphens only')
+    .refine((value) => !RESERVED_SALON_DOMAINS.has(value), 'This workspace domain is reserved'),
   payment_type: z.enum(['Monthly', 'Quarterly', 'Yearly', 'One-time'], {
     error: 'Select a payment type',
   }),

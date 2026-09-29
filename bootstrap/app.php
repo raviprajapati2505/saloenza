@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureAffiliatePermission;
+use App\Http\Middleware\EnsureOnboardedSalonHost;
 use App\Http\Middleware\EnsurePlatformPermission;
 use App\Http\Middleware\EnsureSubscriptionAccess;
 use App\Http\Middleware\EnsureSubscriptionModule;
@@ -20,6 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->append(EnsureOnboardedSalonHost::class);
+
         $middleware->alias([
             'system.admin' => EnsureSystemAdmin::class,
             'affiliate.permission' => EnsureAffiliatePermission::class,

@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
-import { Building2, CreditCard, Hash, Layers, Loader2, Link2, Tag } from 'lucide-react'
+import { Building2, CreditCard, Globe, Hash, Layers, Loader2, Link2, Tag } from 'lucide-react'
 import BaseInput from '../../../../components/ui/BaseInput.jsx'
 import BaseSelect from '../../../../components/ui/BaseSelect.jsx'
 import FormToggle from '../../../../components/ui/FormToggle.jsx'
 import { fetchMasterList } from '../../../../lib/apiHelpers.js'
 import { formatLimit, formatPlanPrice, TRIAL_DURATION_OPTIONS } from '../../../../lib/subscriptionModules.js'
 import { fetchAdminAffiliates } from '../../../../services/affiliatePortalService.js'
+import { normalizeSalonDomainInput, salonWorkspaceHost, slugifySalonDomain } from '../../../../lib/salonHost.js'
 
 const PAYMENT_TYPES = [
   { value: 'Monthly', label: 'Monthly' },
@@ -21,10 +22,15 @@ export default function SalonInfoStep() {
     control,
     watch,
     setValue,
+    getValues,
     formState: { errors },
   } = useFormContext()
 
   const salonErrors = errors.salon || {}
+  const businessName = watch('salon.business_name')
+  const domainValue = watch('salon.domain')
+  const suggestedDomainRef = useRef('')
+  const domainLockedRef = useRef(false)
   const [plans, setPlans] = useState([])
   const [affiliates, setAffiliates] = useState([])
   const [loadingPlans, setLoadingPlans] = useState(true)
@@ -75,6 +81,21 @@ export default function SalonInfoStep() {
     void loadAffiliates()
     return () => { active = false }
   }, [])
+
+  useEffect(() => {
+    const existing = getValues('salon.domain') || ''
+    if (existing && existing !== suggestedDomainRef.current) {
+      domainLockedRef.current = true
+    }
+  })
+
+  useEffect(() => {
+    if (domainLockedRef.current) return
+    const slug = slugifySalonDomain(businessName)
+    suggestedDomainRef.current = slug
+    if ((getValues('salon.domain') || '') === slug) return
+    setValue('salon.domain', slug, { shouldDirty: false, shouldValidate: false })
+  }, [businessName, getValues, setValue])
 
   useEffect(() => {
     if (!selectedPlan) return
@@ -251,6 +272,39 @@ export default function SalonInfoStep() {
             prefix={Building2}
             error={salonErrors.business_name?.message}
             {...register('salon.business_name')}
+          />
+        </div>
+
+        <div className="sm:col-span-2">
+          <Controller
+            name="salon.domain"
+            control={control}
+            render={({ field }) => (
+              <BaseInput
+                id="salon-domain"
+                label="Workspace domain"
+                required
+                placeholder="ravibeautysalon"
+                prefix={Globe}
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                error={salonErrors.domain?.message}
+                hint={
+                  domainValue
+                    ? `Sign-in address: ${salonWorkspaceHost(domainValue)}`
+                    : 'Lowercase only. This becomes the salon address before .saloenza.com.'
+                }
+                name={field.name}
+                ref={field.ref}
+                value={field.value ?? ''}
+                onBlur={field.onBlur}
+                onChange={(event) => {
+                  domainLockedRef.current = true
+                  field.onChange(normalizeSalonDomainInput(event.target.value))
+                }}
+              />
+            )}
           />
         </div>
 

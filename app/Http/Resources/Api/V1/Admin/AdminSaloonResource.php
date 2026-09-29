@@ -19,6 +19,7 @@ class AdminSaloonResource extends JsonResource
         return [
             'id' => $this->id,
             'business_name' => $this->name,
+            'domain' => $this->domain,
             'payment_type' => $this->payment_type,
             'payment_amount' => $this->payment_amount,
             'transaction_id' => $this->transaction_id,

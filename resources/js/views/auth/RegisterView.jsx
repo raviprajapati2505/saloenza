@@ -1,9 +1,20 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import BaseInput from '../../components/ui/BaseInput.jsx'
 import BrandLogo from '../../components/ui/BrandLogo.jsx'
 import { useAuthStore } from '../../stores/auth'
 import { api } from '../../lib/api.js'
+import { normalizeSalonDomainInput, RESERVED_SALON_DOMAINS, salonWorkspaceHost, slugifySalonDomain } from '../../lib/salonHost.js'
+
+function domainFieldError(domain) {
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(domain) || domain.length < 3) {
+    return 'Use a lowercase workspace domain, at least 3 characters.'
+  }
+  if (RESERVED_SALON_DOMAINS.has(domain)) {
+    return 'This workspace domain is reserved.'
+  }
+  return ''
+}
 
 export default function RegisterView() {
   const router = useNavigate()
@@ -13,8 +24,10 @@ export default function RegisterView() {
   const referralCode = searchParams.get('ref') || ''
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
+  const domainTouchedRef = useRef(false)
   const [errors, setErrors] = useState({
     salon_name: '',
+    domain: '',
     name: '',
     email: '',
     phone: '',
@@ -26,6 +39,7 @@ export default function RegisterView() {
   })
   const [form, setForm] = useState({
     salon_name: '',
+    domain: '',
     name: '',
     email: '',
     phone: '',
@@ -71,8 +85,22 @@ export default function RegisterView() {
   }, [strengthScore])
 
   const updateField = (key, value) => {
-    setForm((previous) => ({ ...previous, [key]: value }))
-    setErrors((previous) => ({ ...previous, [key]: '' }))
+    setForm((previous) => {
+      const next = { ...previous, [key]: value }
+      if (key === 'salon_name' && !domainTouchedRef.current) {
+        next.domain = slugifySalonDomain(value)
+      }
+      if (key === 'domain') {
+        domainTouchedRef.current = true
+        next.domain = normalizeSalonDomainInput(value)
+      }
+      return next
+    })
+    setErrors((previous) => ({
+      ...previous,
+      [key]: '',
+      ...(key === 'salon_name' ? { domain: '' } : {}),
+    }))
   }
 
   const validate = () => {
@@ -80,6 +108,7 @@ export default function RegisterView() {
     const cleanPhone = form.phone.trim()
     const nextErrors = {
       salon_name: form.salon_name.trim() ? '' : 'Salon name is required.',
+      domain: domainFieldError(form.domain),
       name: form.name.trim() ? '' : 'Your name is required.',
       email: /\S+@\S+\.\S+/.test(cleanEmail) ? '' : 'Valid email is required.',
       phone: /^\+?[0-9\s\-()]{7,20}$/.test(cleanPhone) ? '' : 'Valid phone is required.',
@@ -104,6 +133,7 @@ export default function RegisterView() {
     try {
       await api.post('/v1/public/register', {
         salon_name: form.salon_name.trim(),
+        domain: form.domain.trim(),
         name: form.name.trim(),
         email: form.email.trim().toLowerCase(),
         phone: form.phone.trim(),
@@ -123,6 +153,7 @@ export default function RegisterView() {
         setErrors((previous) => ({
           ...previous,
           salon_name: serverErrors.salon_name?.[0] || '',
+          domain: serverErrors.domain?.[0] || '',
           name: serverErrors.name?.[0] || '',
           email: serverErrors.email?.[0] || '',
           phone: serverErrors.phone?.[0] || '',
@@ -175,7 +206,18 @@ export default function RegisterView() {
           ) : null}
 
           <form className="mt-5 space-y-4" onSubmit={submit}>
-            <BaseInput modelValue={form.salon_name} onUpdateModelValue={(value) => updateField('salon_name', value)} label="Salon Name" placeholder="e.g. Your Salon Name" error={errors.salon_name} />
+            <BaseInput modelValue={form.salon_name} onUpdateModelValue={(value) => updateField('salon_name', value)} label="Salon Name" placeholder="e.g. Ravi Beauty Salon" error={errors.salon_name} />
+            <BaseInput
+              modelValue={form.domain}
+              onUpdateModelValue={(value) => updateField('domain', value)}
+              label="Workspace domain"
+              placeholder="ravibeautysalon"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              error={errors.domain}
+              hint={form.domain ? `Sign-in address: ${salonWorkspaceHost(form.domain)}` : 'Lowercase only. Example: ravibeautysalon.saloenza.com'}
+            />
             <BaseInput modelValue={form.name} onUpdateModelValue={(value) => updateField('name', value)} label="Your Name" placeholder="Enter your full name" error={errors.name} />
             <BaseInput modelValue={form.email} onUpdateModelValue={(value) => updateField('email', value)} label="Email" type="email" placeholder="you@example.com" error={errors.email} />
             <BaseInput modelValue={form.phone} onUpdateModelValue={(value) => updateField('phone', value)} label="Phone" type="tel" placeholder="+91 98765 43210" error={errors.phone} />

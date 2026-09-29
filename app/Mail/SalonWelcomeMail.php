@@ -5,6 +5,7 @@ namespace App\Mail;
 use App\Mail\Concerns\UsesTenantBranding;
 use App\Models\Saloon;
 use App\Models\User;
+use App\Support\Tenancy\SalonHostResolver;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -33,12 +34,17 @@ class SalonWelcomeMail extends Mailable
 
     public function content(): Content
     {
+        $hostResolver = app(SalonHostResolver::class);
+
         return new Content(
             view: 'emails.salon-welcome',
             with: [
                 'userName' => trim("{$this->user->firstname} {$this->user->lastname}"),
                 'salonName' => $this->saloon->name,
-                'loginUrl' => rtrim((string) config('app.url'), '/') . '/login',
+                'loginUrl' => $hostResolver->loginUrlFor($this->saloon),
+                'workspaceHost' => filled($this->saloon->domain)
+                    ? $this->saloon->domain.'.'.config('tenancy.base_domain')
+                    : null,
                 'email' => $this->user->email,
                 'temporaryPassword' => $this->temporaryPassword,
                 ...$this->brandingViewData(),

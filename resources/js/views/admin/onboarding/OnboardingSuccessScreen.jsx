@@ -2,13 +2,15 @@ import confetti from 'canvas-confetti'
 import React, { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Building2, CheckCircle2, Mail, MapPin, Plus, User } from 'lucide-react'
+import { salonWorkspaceHost } from '../../../lib/salonHost.js'
 import BaseButton from '../../../components/ui/BaseButton.jsx'
 
 /**
  * @param {{ data: import('../../../types/onboarding').OnboardingResponse, onCreateAnother: () => void }} props
  */
 export default function OnboardingSuccessScreen({ data, onCreateAnother }) {
-  const { salon, branch, owner } = data || {}
+  const salon = data?.salon || data?.saloon
+  const { branch, owner } = data || {}
 
   useEffect(() => {
     confetti({
@@ -78,6 +80,9 @@ export default function OnboardingSuccessScreen({ data, onCreateAnother }) {
           <p className="mt-1 text-xs text-slate-500">
             ID: <span className="font-mono font-medium text-slate-700">{salon?.id ?? '—'}</span>
           </p>
+          {salon?.domain ? (
+            <p className="mt-1 text-xs font-medium text-brand-700">{salonWorkspaceHost(salon.domain)}</p>
+          ) : null}
         </motion.div>
 
         {/* Branch */}

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api\V1\Auth;
 
+use App\Support\Tenancy\SalonDomain;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -16,15 +17,23 @@ class RegisterRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->exists('domain')) {
+            $this->merge([
+                'domain' => SalonDomain::normalize($this->input('domain')),
+            ]);
+        }
+    }
+
     /**
-     * Get the validation rules that apply to the request.
-     *
      * @return array<string, mixed>
      */
     public function rules(): array
     {
         return [
             'salon_name' => ['required', 'string', 'max:120'],
+            'domain' => SalonDomain::rules(),
             'name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'string', 'email', 'max:120', 'unique:users,email'],
             'phone' => ['required', 'string', 'regex:/^\+?[0-9\s\-()]{7,20}$/', Rule::unique('users', 'phone')],
@@ -33,5 +42,13 @@ class RegisterRequest extends FormRequest
             'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
             'terms' => ['accepted'],
         ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return SalonDomain::messages('domain');
     }
 }

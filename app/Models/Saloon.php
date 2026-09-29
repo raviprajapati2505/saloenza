@@ -12,6 +12,7 @@ class Saloon extends Model
 {
     protected $fillable = [
         'name',
+        'domain',
         'branch_name',
         'address',
         'city',

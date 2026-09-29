@@ -51,6 +51,7 @@ class AffiliatePortalApiTest extends TestCase
 
         $response = $this->postJson('/api/v1/public/register', [
             'salon_name' => 'Referred Salon',
+            'domain' => 'referredsalon',
             'name' => 'Salon Owner',
             'email' => 'owner@example.com',
             'phone' => '+917100000001',
@@ -265,6 +266,7 @@ class AffiliatePortalApiTest extends TestCase
             'trial_days' => 0,
             'saloon' => [
                 'business_name' => 'Admin Referred Salon',
+                'domain' => 'adminreferredsalon',
                 'payment_type' => 'Monthly',
                 'payment_amount' => 1500,
                 'transaction_id' => 'TXN-AFF-1',

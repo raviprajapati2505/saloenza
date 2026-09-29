@@ -8,6 +8,7 @@ import { getDefaultAuthenticatedPath } from '../../lib/navigation.js'
 import { getLoginWelcomeMessage } from '../../lib/roleDisplay.js'
 import { getPlatformBranding } from '../../stores/platformBranding.js'
 import { pushToast } from '../../stores/toast.js'
+import { currentSalonWorkspace, salonWorkspaceHost } from '../../lib/salonHost.js'
 
 export default function LoginView() {
   const router = useNavigate()
@@ -15,6 +16,8 @@ export default function LoginView() {
   const auth = useAuthStore()
   const platformBranding = getPlatformBranding()
   const portalName = platformBranding?.portal_name || 'Saloenza'
+  const salonWorkspace = currentSalonWorkspace()
+  const workspaceHost = salonWorkspace?.domain ? salonWorkspaceHost(salonWorkspace.domain) : ''
 
   const [submitting, setSubmitting] = useState(false)
   const [authError, setAuthError] = useState('')
@@ -189,9 +192,13 @@ export default function LoginView() {
             </div>
 
             <div className="rounded-[1.75rem] border border-brand-100/80 bg-white/90 p-6 shadow-[0_24px_60px_-28px_rgba(143,10,72,0.35)] backdrop-blur-sm sm:p-8">
-              <h2 className="text-2xl font-bold tracking-tight text-slate-900">Welcome back</h2>
+              <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+                {salonWorkspace?.name ? `Sign in to ${salonWorkspace.name}` : 'Welcome back'}
+              </h2>
               <p className="mt-1.5 text-sm text-slate-500">
-                Sign in to continue to your workspace.
+                {workspaceHost
+                  ? `Continue to ${workspaceHost}.`
+                  : 'Sign in to continue to your workspace.'}
               </p>
 
               {authError ? (

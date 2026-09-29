@@ -5,6 +5,7 @@ namespace App\Http\Requests\Api\V1\Admin;
 use App\Support\Concerns\AuthorizesPermission;
 use App\Support\PasswordRules;
 use App\Support\Phone\PhoneNumber;
+use App\Support\Tenancy\SalonDomain;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -21,8 +22,13 @@ class StoreAdminOnboardingRequest extends FormRequest
     {
         $saloon = $this->input('saloon');
 
-        if (is_array($saloon) && isset($saloon['business_name'])) {
-            $saloon['business_name'] = trim((string) $saloon['business_name']);
+        if (is_array($saloon)) {
+            if (isset($saloon['business_name'])) {
+                $saloon['business_name'] = trim((string) $saloon['business_name']);
+            }
+            if (array_key_exists('domain', $saloon)) {
+                $saloon['domain'] = SalonDomain::normalize($saloon['domain']);
+            }
             $this->merge(['saloon' => $saloon]);
         }
 
@@ -46,6 +52,7 @@ class StoreAdminOnboardingRequest extends FormRequest
         return [
             'saloon' => ['required', 'array'],
             'saloon.business_name' => ['required', 'string', 'max:120'],
+            'saloon.domain' => SalonDomain::rules(),
             'saloon.payment_type' => ['required', 'string', Rule::in(['online', 'cash', 'card', 'upi', 'bank_transfer', 'other', 'monthly', 'quarterly', 'yearly', 'one-time', 'Monthly', 'Quarterly', 'Yearly', 'One-time'])],
             'saloon.payment_amount' => ['required', 'numeric', 'min:0'],
             'saloon.transaction_id' => ['nullable', 'string', 'max:120'],
@@ -85,5 +92,13 @@ class StoreAdminOnboardingRequest extends FormRequest
             'trial_days' => ['sometimes', 'nullable', 'integer', 'min:0', 'max:365'],
             'affiliate_partner_id' => ['nullable', 'integer', 'exists:affiliate_partners,id'],
         ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return SalonDomain::messages('saloon.domain');
     }
 }

@@ -36,6 +36,7 @@ class SalonReferralPortalApiTest extends TestCase
 
         $response = $this->postJson('/api/v1/public/register', [
             'salon_name' => 'Referred Salon',
+            'domain' => 'referredsalon',
             'name' => 'Referred Owner',
             'email' => 'referred.owner@example.com',
             'phone' => '+917100000010',
@@ -191,6 +192,7 @@ class SalonReferralPortalApiTest extends TestCase
     {
         $response = $this->postJson('/api/v1/public/register', [
             'salon_name' => 'New Salon',
+            'domain' => 'newsalon',
             'name' => 'Owner',
             'email' => 'new.owner@example.com',
             'phone' => '+917100000011',

@@ -13,6 +13,7 @@ import {
 describe('salonSchema', () => {
   const validSalon = {
     business_name: 'ABC Salon',
+    domain: 'abcsalon',
     payment_type: 'Monthly',
     amount: 1000,
     transaction_id: 'TXN123456',
@@ -23,6 +24,16 @@ describe('salonSchema', () => {
   it('passes with valid data', () => {
     const result = salonSchema.safeParse(validSalon)
     expect(result.success).toBe(true)
+  })
+
+  it('fails when domain is not lowercase', () => {
+    const result = salonSchema.safeParse({ ...validSalon, domain: 'ABC-Salon' })
+    expect(result.success).toBe(false)
+  })
+
+  it('fails when domain is reserved', () => {
+    const result = salonSchema.safeParse({ ...validSalon, domain: 'app' })
+    expect(result.success).toBe(false)
   })
 
   it('fails when business_name is empty', () => {
@@ -299,6 +310,7 @@ describe('onboardingSchema', () => {
     trial_days: 15,
     salon: {
       business_name: 'ABC Salon',
+      domain: 'abcsalon',
       payment_type: 'Yearly',
       amount: 5000,
       transaction_id: 'TXN999',

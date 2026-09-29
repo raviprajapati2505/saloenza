@@ -244,6 +244,9 @@ export default function AdminOnboardingHubPage() {
                     >
                       <td className="py-4 px-6">
                         <p className="text-sm font-semibold text-slate-900">{record.business_name}</p>
+                        {record.domain ? (
+                          <p className="text-xs font-medium text-brand-700 mt-0.5">{record.domain}.saloenza.com</p>
+                        ) : null}
                         <p className="text-xs text-slate-500 mt-0.5">
                           {[record.city, record.state].filter(Boolean).join(', ') || `${record.branch_count} branch(es)`}
                         </p>

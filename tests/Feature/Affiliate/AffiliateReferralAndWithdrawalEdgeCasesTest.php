@@ -33,6 +33,7 @@ class AffiliateReferralAndWithdrawalEdgeCasesTest extends TestCase
 
         $response = $this->postJson('/api/v1/public/register', [
             'salon_name' => 'No Aff Salon',
+            'domain' => 'noaffsalon',
             'name' => 'Owner',
             'email' => 'no.aff.owner@test.com',
             'phone' => '+917310000001',
@@ -60,6 +61,7 @@ class AffiliateReferralAndWithdrawalEdgeCasesTest extends TestCase
     {
         $response = $this->postJson('/api/v1/public/register', [
             'salon_name' => 'Unknown Aff Salon',
+            'domain' => 'unknownaffsalon',
             'name' => 'Owner Two',
             'email' => 'unknown.aff.owner@test.com',
             'phone' => '+917310000002',

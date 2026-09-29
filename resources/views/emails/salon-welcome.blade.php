@@ -14,6 +14,9 @@
 
     <p>
         <strong>Login email:</strong> {{ $email }}<br>
+        @if(!empty($workspaceHost))
+            <strong>Salon address:</strong> {{ $workspaceHost }}<br>
+        @endif
         <a href="{{ $loginUrl }}" style="color: #2563eb;">Sign in to {{ $portalName }}</a>
     </p>
 

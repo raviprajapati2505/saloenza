@@ -17,6 +17,7 @@ use App\Services\Affiliate\AffiliateCommissionService;
 use App\Services\Tenant\TenantNotificationDispatcher;
 use App\Support\Database\WriteRetry;
 use App\Support\Saloon\ReferralCodeGenerator;
+use App\Support\Tenancy\SalonDomain;
 use App\Support\Staff\DefaultStaffProvisioner;
 use App\Support\Subscription\SubscriptionEntitlements;
 use Illuminate\Support\Facades\DB;
@@ -50,6 +51,7 @@ class AdminOnboardingAction
 
             $saloon = Saloon::query()->create([
                 'name' => trim((string) $saloonData['business_name']),
+                'domain' => SalonDomain::normalize($saloonData['domain'] ?? null),
                 'payment_type' => $saloonData['payment_type'],
                 'payment_amount' => $saloonData['payment_amount'],
                 'transaction_id' => $saloonData['transaction_id'] ?? null,
@@ -199,6 +201,7 @@ class AdminOnboardingAction
             $saloonData = $payload['saloon'];
             $saloon->update([
                 'name' => trim((string) $saloonData['business_name']),
+                'domain' => SalonDomain::normalize($saloonData['domain'] ?? null),
                 'payment_type' => $saloonData['payment_type'],
                 'payment_amount' => $saloonData['payment_amount'],
                 'transaction_id' => $saloonData['transaction_id'] ?? null,

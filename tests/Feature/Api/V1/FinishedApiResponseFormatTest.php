@@ -25,6 +25,7 @@ class FinishedApiResponseFormatTest extends TestCase
     {
         $response = $this->postJson('/api/v1/public/register', [
             'salon_name' => 'Downtown Studio',
+            'domain' => 'downtownstudio',
             'name' => 'Owner Name',
             'email' => 'register.user@gmail.com',
             'phone' => '+91 9876543210',

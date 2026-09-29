@@ -25,6 +25,7 @@ class AdminOnboardingListItemResource extends JsonResource
         return [
             'id' => $this->id,
             'business_name' => $this->name,
+            'domain' => $this->domain,
             'is_active' => (bool) $this->is_active,
             'activation_status' => $this->activation_status ?: Saloon::ACTIVATION_ACTIVE,
             'activation_pending' => method_exists($this->resource, 'isActivationPending')

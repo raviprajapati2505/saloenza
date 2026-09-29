@@ -49,6 +49,7 @@ const STEP_FIELD_PATHS = {
     'start_trial',
     'trial_days',
     'salon.business_name',
+    'salon.domain',
     'salon.payment_type',
     'salon.amount',
     'salon.transaction_id',
@@ -83,6 +84,7 @@ const DEFAULT_VALUES = {
   trial_days: 15,
   salon: {
     business_name: '',
+    domain: '',
     payment_type: undefined,
     amount: '',
     transaction_id: '',
@@ -163,6 +165,10 @@ function OnboardingReviewSummary({ values }) {
         <div>
           <dt className="text-slate-500">Salon</dt>
           <dd className="font-medium text-slate-900">{values.salon?.business_name || '—'}</dd>
+        </div>
+        <div>
+          <dt className="text-slate-500">Workspace domain</dt>
+          <dd className="font-medium text-slate-900">{values.salon?.domain || '—'}</dd>
         </div>
         <div>
           <dt className="text-slate-500">Branch</dt>

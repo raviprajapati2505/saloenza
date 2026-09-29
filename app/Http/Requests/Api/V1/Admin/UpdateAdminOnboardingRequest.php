@@ -9,6 +9,7 @@ use App\Support\Concerns\AuthorizesPermission;
 use App\Support\PasswordRules;
 use App\Support\Phone\PhoneNumber;
 use App\Support\Role\RoleCodes;
+use App\Support\Tenancy\SalonDomain;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -26,8 +27,13 @@ class UpdateAdminOnboardingRequest extends FormRequest
         $saloon = $this->route('saloon');
         $saloonData = $this->input('saloon');
 
-        if (is_array($saloonData) && isset($saloonData['business_name'])) {
-            $saloonData['business_name'] = trim((string) $saloonData['business_name']);
+        if (is_array($saloonData)) {
+            if (isset($saloonData['business_name'])) {
+                $saloonData['business_name'] = trim((string) $saloonData['business_name']);
+            }
+            if (array_key_exists('domain', $saloonData)) {
+                $saloonData['domain'] = SalonDomain::normalize($saloonData['domain']);
+            }
             $this->merge(['saloon' => $saloonData]);
         }
 
@@ -89,6 +95,7 @@ class UpdateAdminOnboardingRequest extends FormRequest
         return [
             'saloon' => ['required', 'array'],
             'saloon.business_name' => ['required', 'string', 'max:120'],
+            'saloon.domain' => SalonDomain::rules($saloonId),
             'saloon.payment_type' => ['required', 'string', Rule::in(['online', 'cash', 'card', 'upi', 'bank_transfer', 'other', 'monthly', 'quarterly', 'yearly', 'one-time', 'Monthly', 'Quarterly', 'Yearly', 'One-time'])],
             'saloon.payment_amount' => ['required', 'numeric', 'min:0'],
             'saloon.transaction_id' => ['nullable', 'string', 'max:120'],
@@ -151,5 +158,13 @@ class UpdateAdminOnboardingRequest extends FormRequest
             'trial_days' => ['sometimes', 'nullable', 'integer', 'min:0', 'max:365'],
             'affiliate_partner_id' => ['nullable', 'integer', 'exists:affiliate_partners,id'],
         ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return SalonDomain::messages('saloon.domain');
     }
 }
